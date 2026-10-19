@@ -17,6 +17,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             DeviceSeeder::class,
             AttendanceSeeder::class,
+            DailyReportSeeder::class,
         ]);
     }
 }

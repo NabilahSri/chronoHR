@@ -16,13 +16,18 @@ class PayrollController extends Controller
         $month = (int) $request->input('month', now()->month);
         $year = (int) $request->input('year', now()->year);
 
-        $payrolls = Payroll::with('user')
-            ->where('month', $month)
+        $allPayrolls = Payroll::where('month', $month)
             ->where('year', $year)
             ->get();
 
-        $totalExpense = $payrolls->sum('net_salary');
-        $isPublished = $payrolls->where('status', 'PUBLISHED')->isNotEmpty();
+        $totalExpense = $allPayrolls->sum('net_salary');
+        $isPublished = $allPayrolls->where('status', 'PUBLISHED')->isNotEmpty();
+
+        $payrolls = Payroll::with('user')
+            ->where('month', $month)
+            ->where('year', $year)
+            ->paginate(15)
+            ->withQueryString();
 
         return view('finance.payrolls.index', compact('payrolls', 'month', 'year', 'totalExpense', 'isPublished'));
     }

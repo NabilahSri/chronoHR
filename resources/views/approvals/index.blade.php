@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Persetujuan Cuti & Izin — ChronoHR ')
-@section('page_title', 'Otoritas Persetujuan Cuti, Izin & WFH')
+@section('page_title', 'Pengajuan Izin & WFH')
 
 @section('content')
     <div class="space-y-8">
@@ -11,7 +11,7 @@
             <div class="flex items-center justify-between mb-4">
                 <div>
                     <h2 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2.5">
-                        <span>Menunggu Persetujuan Atasan</span>
+                        <span>Menunggu Persetujuan</span>
                         <span
                             class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-800 border border-amber-200">
                             {{ $pendingLeaves->count() }} Antrean
@@ -200,6 +200,12 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($historyLeaves->hasPages())
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                    {{ $historyLeaves->links() }}
+                </div>
+            @endif
         </div>
 
     </div>

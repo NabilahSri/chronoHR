@@ -12,8 +12,22 @@ class DailyReport extends Model
 {
     use HasUuids;
 
+    protected $casts = [
+        'date' => 'date',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'COMPLETED';
+    }
+
+    public function isMorningOnly(): bool
+    {
+        return $this->status === 'MORNING_ONLY';
     }
 }

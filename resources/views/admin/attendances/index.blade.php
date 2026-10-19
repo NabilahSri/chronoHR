@@ -70,6 +70,48 @@
             </div>
         </div>
 
+        <!-- Office Geofence Reference Information & Actions -->
+        <div class="bg-gradient-to-r from-sky-500/10 via-slate-50 to-indigo-500/10 rounded-3xl border border-sky-200/80 p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+            <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-2xl bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm font-bold text-slate-900 tracking-tight">{{ $officeSettings['name'] ?? 'Kantor Pusat ChronoHR' }}</span>
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-sky-100 text-sky-800 border border-sky-300">
+                            Geofence: {{ $officeSettings['radius'] ?? 100 }} Meter
+                        </span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        Acuan koordinat ({{ $officeSettings['latitude'] ?? '-6.2088' }}, {{ $officeSettings['longitude'] ?? '106.8456' }}): wajib untuk <strong>Magang</strong>, <strong>Karyawan WFH</strong>, dan karyawan on-site yang <strong>lupa membawa kartu RFID</strong>.
+                    </p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
+                <button type="button" onclick="openLocationCheckInModal()"
+                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow transition cursor-pointer active:scale-95">
+                    <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>Presensi Lokasi (GPS)</span>
+                </button>
+                <a href="{{ route('admin.settings.index') }}"
+                    class="p-2.5 rounded-xl bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition"
+                    title="Atur Titik Koordinat Kantor">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                </a>
+            </div>
+        </div>
+
         <!-- Search Bar Only (Log Presensi Per Hari) -->
         <div class="bg-white/95 rounded-3xl border border-slate-200/90 p-5 shadow-xs backdrop-blur-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
             <form method="GET" action="{{ route('admin.attendances.index') }}" class="flex-1 max-w-xl flex items-center gap-2.5">
@@ -226,17 +268,26 @@
                                             </span>
                                         @endif
 
-                                        <span class="text-[10px] text-slate-400 font-mono">
+                                        <div class="text-[10px] text-slate-400 font-mono flex flex-col gap-0.5">
                                             @if ($att->method === 'RFID')
-                                                📡 RFID Scanner
+                                                <span class="text-slate-600">📡 RFID Scanner</span>
                                             @elseif($att->method === 'FACIAL_LOCATION')
-                                                📸 Face & GPS
+                                                <span class="inline-flex items-center gap-1 text-[10px] font-bold text-sky-700 bg-sky-50 px-2 py-0.5 rounded border border-sky-200 w-fit">
+                                                    📸 GPS & Lokasi
+                                                </span>
+                                                @if($att->latitude && $att->longitude)
+                                                    <a href="https://www.google.com/maps?q={{ $att->latitude }},{{ $att->longitude }}" target="_blank"
+                                                        class="text-[9px] font-mono text-slate-400 hover:text-sky-600 transition truncate max-w-[150px] flex items-center gap-1"
+                                                        title="Buka titik koordinat di Google Maps">
+                                                        <span>📍 {{ round($att->latitude, 4) }}, {{ round($att->longitude, 4) }}</span>
+                                                    </a>
+                                                @endif
                                             @elseif($att->method === 'FORM')
-                                                📝 Form Izin/Cuti
+                                                <span>📝 Form Izin/Cuti</span>
                                             @else
-                                                —
+                                                <span>—</span>
                                             @endif
-                                        </span>
+                                        </div>
                                     </div>
                                 </td>
 
@@ -291,6 +342,219 @@
                 </div>
             @endif
         </div>
-
     </div>
+
+    <!-- MODAL PRESENSI LOKASI (GPS / Geofencing) -->
+    <div id="locationCheckInModal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-slide-in-up">
+            <!-- Modal Header -->
+            <div class="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-2xl bg-sky-50 text-sky-600 border border-sky-100 flex items-center justify-center shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-bold text-slate-900 tracking-tight">Presensi Berbasis Lokasi (GPS)</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Validasi titik lokasi terhadap koordinat acuan kantor.</p>
+                    </div>
+                </div>
+                <button type="button" onclick="closeLocationCheckInModal()"
+                    class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition cursor-pointer">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body Form -->
+            <form action="{{ route('attendances.location-check-in') }}" method="POST" class="p-6 space-y-4">
+                @csrf
+
+                <!-- Pilih Karyawan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">
+                        Pilih Personil / Karyawan
+                    </label>
+                    <select name="user_id" id="modal_user_id" required
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                        @foreach($users as $u)
+                            <option value="{{ $u->id }}" {{ auth()->id() === $u->id ? 'selected' : '' }}>
+                                {{ $u->name }} ({{ $u->employment_type }}) — {{ $u->email }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <!-- Tipe Presensi -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">
+                        Opsi Kehadiran
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative flex flex-col p-3 rounded-2xl border border-slate-200 cursor-pointer hover:border-sky-400 has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50/50 transition">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-900">Hadir On-Site</span>
+                                <input type="radio" name="presence_type" value="ON_SITE" checked class="text-sky-600 focus:ring-0">
+                            </div>
+                            <span class="text-[11px] text-slate-500 leading-tight">Di Kantor (Lupa RFID / Magang On-Site)</span>
+                        </label>
+
+                        <label class="relative flex flex-col p-3 rounded-2xl border border-slate-200 cursor-pointer hover:border-sky-400 has-[:checked]:border-sky-600 has-[:checked]:bg-sky-50/50 transition">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-xs font-bold text-slate-900">Remote / WFH</span>
+                                <input type="radio" name="presence_type" value="WFH" class="text-sky-600 focus:ring-0">
+                            </div>
+                            <span class="text-[11px] text-slate-500 leading-tight">Bekerja dari Rumah (WFH)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- GPS Coordinate Quick Detect -->
+                <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-slate-900 uppercase tracking-wider">Titik Koordinat GPS</span>
+                        <button type="button" onclick="detectModalGPS()"
+                            class="inline-flex items-center gap-1.5 px-3 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold transition cursor-pointer active:scale-95">
+                            <svg class="w-3.5 h-3.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span>Ambil GPS Sekarang</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Latitude</label>
+                            <input type="number" step="any" name="latitude" id="modal_latitude" required
+                                value="{{ $officeSettings['latitude'] ?? '-6.20880000' }}"
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-slate-900 transition">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">Longitude</label>
+                            <input type="number" step="any" name="longitude" id="modal_longitude" required
+                                value="{{ $officeSettings['longitude'] ?? '106.84560000' }}"
+                                class="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-mono font-bold focus:outline-none focus:border-slate-900 transition">
+                        </div>
+                    </div>
+
+                    <!-- Realtime Distance Badge -->
+                    <div id="modal_distance_indicator" class="p-2.5 rounded-xl bg-sky-50 border border-sky-100 text-xs flex items-center justify-between text-sky-800">
+                        <span class="font-medium">Jarak ke Titik Kantor:</span>
+                        <span id="modal_distance_val" class="font-bold font-mono">0 Meter (Dalam Radius)</span>
+                    </div>
+                </div>
+
+                <!-- Catatan / Keterangan -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5">
+                        Catatan (Opsional)
+                    </label>
+                    <input type="text" name="notes" placeholder="Contoh: Lupa membawa kartu RFID / Magang On-Site"
+                        class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs focus:outline-none focus:bg-white focus:border-slate-900 transition">
+                </div>
+
+                <!-- Submit Button -->
+                <div class="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
+                    <button type="button" onclick="closeLocationCheckInModal()"
+                        class="px-4 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition cursor-pointer">
+                        Batal
+                    </button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow transition cursor-pointer active:scale-95">
+                        Konfirmasi Presensi Lokasi
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript Modal & Distance Calc -->
+    <script>
+        const officeLat = {{ (float) ($officeSettings['latitude'] ?? -6.2088) }};
+        const officeLon = {{ (float) ($officeSettings['longitude'] ?? 106.8456) }};
+        const officeRadius = {{ (int) ($officeSettings['radius'] ?? 100) }};
+
+        function openLocationCheckInModal() {
+            document.getElementById('locationCheckInModal').classList.remove('hidden');
+            recalculateDistance();
+        }
+
+        function closeLocationCheckInModal() {
+            document.getElementById('locationCheckInModal').classList.add('hidden');
+        }
+
+        function calculateHaversine(lat1, lon1, lat2, lon2) {
+            const R = 6371000;
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a =
+                Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                Math.sin(dLon / 2) * Math.sin(dLon / 2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            return Math.round(R * c);
+        }
+
+        function recalculateDistance() {
+            const latInput = document.getElementById('modal_latitude');
+            const lonInput = document.getElementById('modal_longitude');
+            const distVal = document.getElementById('modal_distance_val');
+            const distBox = document.getElementById('modal_distance_indicator');
+
+            if (!latInput || !lonInput || !distVal || !distBox) return;
+
+            const lat = parseFloat(latInput.value);
+            const lon = parseFloat(lonInput.value);
+
+            if (isNaN(lat) || isNaN(lon)) return;
+
+            const dist = calculateHaversine(lat, lon, officeLat, officeLon);
+
+            if (dist <= officeRadius) {
+                distBox.className = 'p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs flex items-center justify-between text-emerald-800';
+                distVal.textContent = `${dist} Meter (✅ Di dalam radius ${officeRadius}m)`;
+            } else {
+                distBox.className = 'p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs flex items-center justify-between text-amber-800';
+                distVal.textContent = `${dist} Meter (⚠️ Di luar radius kantor ${officeRadius}m)`;
+            }
+        }
+
+        function detectModalGPS() {
+            if (!navigator.geolocation) {
+                alert('Browser Anda tidak mendukung deteksi GPS.');
+                return;
+            }
+
+            const distVal = document.getElementById('modal_distance_val');
+            if (distVal) distVal.textContent = 'Mendeteksi koordinat perangkat...';
+
+            navigator.geolocation.getCurrentPosition(
+                function(pos) {
+                    const lat = pos.coords.latitude.toFixed(8);
+                    const lon = pos.coords.longitude.toFixed(8);
+                    document.getElementById('modal_latitude').value = lat;
+                    document.getElementById('modal_longitude').value = lon;
+                    recalculateDistance();
+                },
+                function(err) {
+                    alert('Gagal mendeteksi lokasi: ' + err.message);
+                    recalculateDistance();
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const latInput = document.getElementById('modal_latitude');
+            const lonInput = document.getElementById('modal_longitude');
+            if (latInput) latInput.addEventListener('input', recalculateDistance);
+            if (lonInput) lonInput.addEventListener('input', recalculateDistance);
+        });
+    </script>
 @endsection
+

@@ -20,8 +20,7 @@ class LeaveApprovalController extends Controller
         $historyLeaves = LeaveRequest::with(['user', 'approver'])
             ->whereIn('status', ['APPROVED', 'REJECTED'])
             ->latest('updated_at')
-            ->take(20)
-            ->get();
+            ->paginate(15);
 
         return view('approvals.index', compact('pendingLeaves', 'historyLeaves'));
     }

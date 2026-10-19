@@ -38,11 +38,14 @@ class UserController extends Controller
     public function store(UserRequest $request): RedirectResponse
     {
         $validated = $request->validated();
+        $roles = $validated['roles'] ?? [];
+        unset($validated['roles']);
+
         $validated['password'] = Hash::make($validated['password'] ?? 'password');
         $validated['can_approve_leaves'] = $request->boolean('can_approve_leaves');
 
         $user = User::create($validated);
-        $user->roles()->sync($request->input('roles', []));
+        $user->roles()->sync($roles);
 
         return redirect()->route('admin.users.index')->with('success', 'Karyawan berhasil didaftarkan.');
     }
@@ -57,6 +60,8 @@ class UserController extends Controller
     public function update(UserRequest $request, User $user): RedirectResponse
     {
         $validated = $request->validated();
+        $roles = $validated['roles'] ?? [];
+        unset($validated['roles']);
 
         if (!empty($validated['password'])) {
             $validated['password'] = Hash::make($validated['password']);
@@ -67,7 +72,7 @@ class UserController extends Controller
         $validated['can_approve_leaves'] = $request->boolean('can_approve_leaves');
 
         $user->update($validated);
-        $user->roles()->sync($request->input('roles', []));
+        $user->roles()->sync($roles);
 
         return redirect()->route('admin.users.index')->with('success', 'Data karyawan berhasil diperbarui.');
     }

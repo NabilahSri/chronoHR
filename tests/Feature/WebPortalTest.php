@@ -23,6 +23,8 @@ class WebPortalTest extends TestCase
         $this->actingAs($user)->get(route('admin.dashboard'))->assertOk();
         $this->actingAs($user)->get(route('admin.users.index'))->assertOk();
         $this->actingAs($user)->get(route('admin.settings.index'))->assertOk();
+        $this->actingAs($user)->get(route('finance.payroll.index'))->assertOk();
+        $this->actingAs($user)->get(route('finance.incentives.index'))->assertOk();
     }
 
     public function test_ceo_can_login_and_access_executive_dashboard(): void
@@ -111,5 +113,48 @@ class WebPortalTest extends TestCase
             'date' => '2026-10-21',
             'status' => 'SAKIT',
         ]);
+    }
+
+    public function test_admin_can_create_and_update_user_with_roles(): void
+    {
+        $admin = User::where('email', 'admin@test.com')->first();
+        $role = \App\Models\Role::first();
+
+        // 1. Create employee
+        $createResponse = $this->actingAs($admin)->post(route('admin.users.store'), [
+            'name' => 'Budi Santoso',
+            'email' => 'budi.santoso@example.com',
+            'password' => 'secret123',
+            'rfid_uid' => 'RFID998877',
+            'employment_type' => 'KARTAP',
+            'basic_salary' => 6000000,
+            'can_approve_leaves' => 1,
+            'roles' => [$role->id],
+        ]);
+
+        $createResponse->assertRedirect(route('admin.users.index'));
+        $createdUser = User::where('email', 'budi.santoso@example.com')->first();
+        $this->assertNotNull($createdUser);
+        $this->assertTrue($createdUser->roles->contains('id', $role->id));
+        $this->assertEquals(6000000, (float) $createdUser->basic_salary);
+
+        // 2. Update employee
+        $updateResponse = $this->actingAs($admin)->put(route('admin.users.update', $createdUser), [
+            'name' => 'Budi Santoso Updated',
+            'email' => 'budi.santoso@example.com',
+            'rfid_uid' => 'RFID998877',
+            'employment_type' => 'PKWT',
+            'basic_salary' => 7500000,
+            'can_approve_leaves' => 0,
+            'roles' => [$role->id],
+        ]);
+
+        $updateResponse->assertRedirect(route('admin.users.index'));
+        $createdUser->refresh();
+        $this->assertEquals('Budi Santoso Updated', $createdUser->name);
+        $this->assertEquals('PKWT', $createdUser->employment_type);
+        $this->assertEquals(7500000, (float) $createdUser->basic_salary);
+        $this->assertFalse((bool) $createdUser->can_approve_leaves);
+        $this->assertTrue($createdUser->roles->contains('id', $role->id));
     }
 }

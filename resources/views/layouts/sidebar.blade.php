@@ -187,7 +187,7 @@
             </a>
         @endif
 
-        @if (auth()->user()->hasRole('finance'))
+        @if (auth()->user()->hasRole('finance') || auth()->user()->hasRole('super_admin'))
             <div class="px-3 pt-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-400">
                 Finance & Payroll
             </div>
@@ -280,6 +280,15 @@
                             </div>
                         @endif
                     </a>
+
+                    <a href="{{ route('reports.daily-tasks') }}"
+                        class="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition-all {{ request()->routeIs('reports.daily-tasks*') ? 'text-white bg-sky-500/20 font-bold border border-sky-400/30' : 'text-slate-400 hover:text-white hover:bg-slate-800/50' }}">
+                        <span>Task Harian</span>
+                        @if (request()->routeIs('reports.daily-tasks*'))
+                            <div class="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]">
+                            </div>
+                        @endif
+                    </a>
                 </div>
             </div>
         @endif
@@ -298,7 +307,7 @@
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <span class="text-sm">Persetujuan Cuti</span>
+                <span class="text-sm">Pengajuan</span>
                 @if (request()->routeIs('approval.*'))
                     <div class="ml-auto w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_8px_rgba(56,189,248,0.7)]">
                     </div>

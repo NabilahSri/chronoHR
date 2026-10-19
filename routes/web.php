@@ -46,8 +46,8 @@ Route::middleware('auth')->group(function () {
         Route::get('/attendances', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendances.index');
     });
 
-    // Finance & HRD Routes
-    Route::middleware('role:finance')->prefix('finance')->name('finance.')->group(function () {
+    // Finance & HRD Routes (Finance & Super Admin)
+    Route::middleware('role:finance,super_admin')->prefix('finance')->name('finance.')->group(function () {
         Route::get('/payrolls', [PayrollController::class, 'index'])->name('payroll.index');
         Route::post('/payrolls/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
         Route::post('/payrolls/publish', [PayrollController::class, 'publish'])->name('payroll.publish');
@@ -72,8 +72,63 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:super_admin,ceo,finance')->prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
         Route::get('/attendances', [\App\Http\Controllers\ReportController::class, 'attendances'])->name('attendances');
+        Route::get('/attendances/export', [\App\Http\Controllers\ReportController::class, 'exportAttendances'])->name('attendances.export');
         Route::get('/payrolls', [\App\Http\Controllers\ReportController::class, 'payrolls'])->name('payrolls');
+        Route::get('/payrolls/export', [\App\Http\Controllers\ReportController::class, 'exportPayrolls'])->name('payrolls.export');
+        Route::get('/payrolls/{payroll}/pdf', [\App\Http\Controllers\ReportController::class, 'downloadSlipPdf'])->name('payrolls.pdf');
         Route::get('/leaves', [\App\Http\Controllers\ReportController::class, 'leaves'])->name('leaves');
+        Route::get('/leaves/export', [\App\Http\Controllers\ReportController::class, 'exportLeaves'])->name('leaves.export');
+        Route::get('/daily-tasks', [\App\Http\Controllers\ReportController::class, 'dailyTasks'])->name('daily-tasks');
+        Route::get('/daily-tasks/export', [\App\Http\Controllers\ReportController::class, 'exportDailyTasks'])->name('daily-tasks.export');
+        Route::post('/daily-tasks', [\App\Http\Controllers\ReportController::class, 'storeDailyTask'])->name('daily-tasks.store');
+        Route::put('/daily-tasks/{dailyReport}', [\App\Http\Controllers\ReportController::class, 'updateDailyTask'])->name('daily-tasks.update');
     });
+
+    // Location Attendance Check-in Route (GPS Web Portal)
+    Route::post('/attendances/location-check-in', [\App\Http\Controllers\Admin\AttendanceController::class, 'locationCheckIn'])->name('attendances.location-check-in');
 });
+
+// API Endpoint for Location Attendance Check-in (Mobile / Kiosk / External GPS Sync)
+Route::post('/api/attendances/location-check-in', function (\Illuminate\Http\Request $request, \App\Services\AttendanceService $attendanceService) {
+    $validated = $request->validate([
+        'user_id' => 'nullable|uuid|exists:users,id',
+        'email' => 'nullable|email|exists:users,email',
+        'latitude' => 'required|numeric|between:-90,90',
+        'longitude' => 'required|numeric|between:-180,180',
+        'presence_type' => 'required|in:ON_SITE,WFH,AUTO',
+        'notes' => 'nullable|string|max:255',
+    ]);
+
+    $user = null;
+    if (!empty($validated['user_id'])) {
+        $user = \App\Models\User::find($validated['user_id']);
+    } elseif (!empty($validated['email'])) {
+        $user = \App\Models\User::where('email', $validated['email'])->first();
+    }
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Pengguna tidak ditemukan. Kirimkan parameter user_id atau email yang valid.',
+        ], 404);
+    }
+
+    $result = $attendanceService->recordLocationAttendance(
+        user: $user,
+        latitude: (float) $validated['latitude'],
+        longitude: (float) $validated['longitude'],
+        presenceType: $validated['presence_type'],
+        notes: $validated['notes'] ?? null
+    );
+
+    return response()->json([
+        'success' => true,
+        'action' => $result['action'],
+        'message' => $result['message'],
+        'distance' => $result['distance'],
+        'is_within_radius' => $result['is_within_radius'],
+        'attendance' => $result['attendance'],
+    ]);
+})->name('api.attendances.location-check-in');
+
 

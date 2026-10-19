@@ -30,6 +30,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->validateCsrfTokens(except: [
             'devices/heartbeat',
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

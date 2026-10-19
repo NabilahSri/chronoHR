@@ -80,4 +80,73 @@ class PayrollServiceTest extends TestCase
         // Net: 4400000 - 60000 + 42000 = 4382000
         $this->assertEquals(4382000, $payroll['net_salary']);
     }
+
+    public function test_calculate_intern_with_voluntary_stipend_and_project_incentives(): void
+    {
+        $intern = User::create([
+            'name' => 'Intern Uang Saku',
+            'email' => 'intern.stipend@example.com',
+            'password' => bcrypt('password'),
+            'employment_type' => 'INTERN',
+            'basic_salary' => 500000, // Uang saku 
+        ]);
+
+        ProjectIncentive::create([
+            'user_id' => $intern->id,
+            'project_name' => 'Proyek Pegang Klien X',
+            'amount' => 1000000,
+            'given_date' => '2026-10-18',
+        ]);
+
+        $payroll = $this->service->calculateForUser($intern, 10, 2026, 22);
+
+        // Uang saku 500k + Proyek 1000k = 1500k, tanpa potongan WFH
+        $this->assertEquals(1500000, $payroll['net_salary']);
+        $this->assertEquals(1500000, $payroll['gross_salary']);
+        $this->assertEquals(0, $payroll['wfh_deduction_amount']);
+        $this->assertEquals(1000000, $payroll['overtime_pay']);
+    }
+
+    public function test_calculate_employee_payroll_fully_deducts_sick_and_permit_days(): void
+    {
+        $employee = User::create([
+            'name' => 'Karyawan Sakit Izin Test',
+            'email' => 'sakit.izin@example.com',
+            'password' => bcrypt('password'),
+            'employment_type' => 'KARTAP',
+            'basic_salary' => 4400000, // Daily rate = 4400000 / 22 = 200,000 / day
+        ]);
+
+        // 1 hari Sakit
+        Attendance::create([
+            'user_id' => $employee->id,
+            'date' => '2026-10-05',
+            'status' => 'SAKIT',
+            'method' => 'FORM',
+        ]);
+
+        // 2 hari Izin
+        Attendance::create([
+            'user_id' => $employee->id,
+            'date' => '2026-10-06',
+            'status' => 'IZIN',
+            'method' => 'FORM',
+        ]);
+        Attendance::create([
+            'user_id' => $employee->id,
+            'date' => '2026-10-07',
+            'status' => 'IZIN',
+            'method' => 'FORM',
+        ]);
+
+        $payroll = $this->service->calculateForUser($employee, 10, 2026, 22);
+
+        $this->assertEquals(200000, $payroll['daily_salary_rate']);
+        $this->assertEquals(1, $payroll['total_sick_days']);
+        $this->assertEquals(2, $payroll['total_permit_days']);
+        // Full ga dibayar hari itu: 3 hari x Rp 200.000 = Rp 600.000
+        $this->assertEquals(600000, $payroll['leave_deduction_amount']);
+        // Net: 4400000 - 600000 = 3800000
+        $this->assertEquals(3800000, $payroll['net_salary']);
+    }
 }

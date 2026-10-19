@@ -2,7 +2,8 @@
 
 @section('title', 'Laporan Slip Gaji — ChronoHR')
 @section('page_title', 'Laporan Rekapitulasi Slip Gaji')
-@section('page_subtitle', 'Rekapitulasi beban penggajian bulanan, pemotongan WFH berdasar ikatan kerja, dan insentif
+@section('page_subtitle',
+    'Rekapitulasi beban penggajian bulanan, pemotongan WFH berdasar ikatan kerja, dan insentif
     lembur.')
 
 @section('content')
@@ -28,13 +29,13 @@
                 <span class="text-[10px] text-slate-500 mt-1">Sebelum potongan & tunjangan</span>
             </div>
 
-            <!-- Total WFH Deduction -->
+            <!-- Total Deductions -->
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Total Potongan WFH</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Total Potongan (WFH & Sakit/Izin)</span>
                 <div class="text-xl sm:text-2xl font-extrabold text-rose-600 font-mono mt-2">
-                    -Rp{{ number_format($stats['total_wfh_deduction'], 0, ',', '.') }}
+                    -Rp{{ number_format($stats['total_wfh_deduction'] + ($stats['total_leave_deduction'] ?? 0), 0, ',', '.') }}
                 </div>
-                <span class="text-[10px] text-slate-500 mt-1">Efisiensi operasional remote</span>
+                <span class="text-[10px] text-slate-500 mt-1">WFH: -Rp{{ number_format($stats['total_wfh_deduction'], 0, ',', '.') }} · Sakit/Izin: -Rp{{ number_format($stats['total_leave_deduction'] ?? 0, 0, ',', '.') }}</span>
             </div>
 
             <!-- Total Overtime Pay -->
@@ -72,7 +73,7 @@
                     </div>
                     <h3 class="text-sm font-bold text-slate-900">Parameter Filter Rekapitulasi Slip Gaji</h3>
                 </div>
-                @if (request()->hasAny(['month', 'year', 'user_id', 'status', 'employment_type']))
+                @if (request()->hasAny(['month', 'year', 'user_id', 'employment_type']))
                     <a href="{{ route('reports.payrolls') }}"
                         class="text-xs text-sky-600 hover:text-sky-700 font-semibold transition">
                         Reset Filter
@@ -81,7 +82,7 @@
             </div>
 
             <form method="GET" action="{{ route('reports.payrolls') }}" class="w-full space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <!-- Bulan -->
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Bulan
@@ -139,18 +140,6 @@
                         </select>
                     </div>
 
-                    <!-- Status Slip -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status
-                            Slip</label>
-                        <select name="status"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua Status —</option>
-                            <option value="PUBLISHED" {{ $status === 'PUBLISHED' ? 'selected' : '' }}>Published (Resmi)
-                            </option>
-                            <option value="DRAFT" {{ $status === 'DRAFT' ? 'selected' : '' }}>Draft (Review)</option>
-                        </select>
-                    </div>
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-2">
@@ -170,18 +159,28 @@
                     <p class="text-xs text-slate-500 mt-0.5">
                         Periode: <strong
                             class="text-slate-700">{{ \Carbon\Carbon::create($year, $month, 1)->translatedFormat('F Y') }}</strong>
+                        · Jadwal Gajian: <strong class="text-indigo-600">Tgl
+                            {{ \App\Models\Setting::getValue('payday_date', 25) }} setiap bulan</strong>
                         · Kebijakan WFH: KARTAP {{ \App\Models\Setting::getValue('wfh_deduction_kartap_pct', 10) }}% / PKWT
                         {{ \App\Models\Setting::getValue('wfh_deduction_pkwt_pct', 30) }}%
                     </p>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2.5">
+                    <a href="{{ route('reports.payrolls.export', request()->query()) }}"
+                        class="inline-flex items-center gap-2 px-3.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white rounded-xl text-xs font-semibold shadow-2xs hover:shadow transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                        </svg>
+                        <span>Export ke Excel</span>
+                    </a>
                     <span
                         class="text-xs font-mono font-bold text-emerald-700 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200">
                         Total: Rp{{ number_format($stats['total_net'], 0, ',', '.') }}
                     </span>
                     <span
                         class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
-                        {{ $payrolls->count() }} Slip
+                        {{ $payrolls->total() }} Slip
                     </span>
                 </div>
             </div>
@@ -194,10 +193,11 @@
                             <th class="px-6 py-4">Karyawan & Status</th>
                             <th class="px-6 py-4 text-center">Rekap Hari</th>
                             <th class="px-6 py-4 text-right">Gaji Pokok</th>
-                            <th class="px-6 py-4 text-right">Potongan WFH</th>
+                            <th class="px-6 py-4 text-right">Potongan (WFH & Sakit/Izin)</th>
                             <th class="px-6 py-4 text-right">Lembur</th>
                             <th class="px-6 py-4 text-right">Gaji Bersih (Net)</th>
                             <th class="px-6 py-4 text-center">Status</th>
+                            <th class="px-6 py-4 text-center">Slip Gaji</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
@@ -218,37 +218,71 @@
 
                                 <!-- Rekap Hari -->
                                 <td class="px-6 py-4 text-center text-xs">
-                                    <div class="font-mono text-slate-800">
-                                        <span class="font-bold text-emerald-600">{{ $p->total_present_onsite }}d
-                                            On-Site</span>
-                                        <span class="text-slate-300 mx-1">·</span>
-                                        <span class="font-bold text-sky-600">{{ $p->total_wfh_days }}d WFH</span>
-                                    </div>
-                                    <div class="text-[10px] text-slate-400 mt-0.5 font-mono">
-                                        Total {{ $p->total_working_days }} hari kerja
-                                    </div>
+                                    @if (($p->user->employment_type ?? '') === 'INTERN')
+                                        <div class="text-[11px] text-slate-400 font-sans italic">Magang Fleksibel</div>
+                                    @else
+                                        <div class="font-mono text-slate-800">
+                                            <span class="font-bold text-emerald-600">{{ $p->total_present_onsite }}d
+                                                On-Site</span>
+                                            <span class="text-slate-300 mx-1">·</span>
+                                            <span class="font-bold text-sky-600">{{ $p->total_wfh_days }}d WFH</span>
+                                        </div>
+                                        <div class="text-[10px] text-slate-400 mt-0.5 font-mono">
+                                            Total {{ $p->total_working_days }} hari kerja
+                                            @if (($p->total_sick_days + $p->total_permit_days) > 0)
+                                                · <span class="text-rose-600 font-bold">{{ $p->total_sick_days + $p->total_permit_days }}d Sakit/Izin</span>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
 
                                 <!-- Gaji Pokok -->
                                 <td class="px-6 py-4 text-right font-mono text-xs text-slate-700">
-                                    Rp{{ number_format($p->gross_salary, 0, ',', '.') }}
+                                    @if (($p->user->employment_type ?? '') === 'INTERN')
+                                        @if (($p->user->basic_salary ?? 0) > 0)
+                                            <div>Rp{{ number_format($p->user->basic_salary, 0, ',', '.') }}</div>
+                                            <div class="text-[10px] text-sky-600 font-sans">Uang Saku</div>
+                                        @else
+                                            <div class="text-slate-400 text-xs italic font-sans"> (Rp0)</div>
+                                        @endif
+                                    @else
+                                        Rp{{ number_format($p->gross_salary, 0, ',', '.') }}
+                                    @endif
                                 </td>
 
-                                <!-- Potongan WFH -->
+                                <!-- Potongan WFH & Sakit/Izin -->
                                 <td class="px-6 py-4 text-right font-mono text-xs">
-                                    @if ($p->wfh_deduction_amount > 0)
+                                    @if (($p->user->employment_type ?? '') === 'INTERN')
+                                        <span class="text-slate-400 italic font-sans text-[11px]">—</span>
+                                    @elseif (($p->wfh_deduction_amount + ($p->leave_deduction_amount ?? 0)) > 0)
                                         <span
                                             class="text-rose-600 font-bold bg-rose-50 px-2 py-0.5 rounded border border-rose-200">
-                                            -Rp{{ number_format($p->wfh_deduction_amount, 0, ',', '.') }}
+                                            -Rp{{ number_format($p->wfh_deduction_amount + ($p->leave_deduction_amount ?? 0), 0, ',', '.') }}
                                         </span>
+                                        @if (($p->leave_deduction_amount ?? 0) > 0)
+                                            <div class="text-[10px] text-rose-500 font-sans mt-0.5">
+                                                (Skt/Izn: -Rp{{ number_format($p->leave_deduction_amount, 0, ',', '.') }})
+                                            </div>
+                                        @endif
                                     @else
                                         <span class="text-slate-300">Rp0</span>
                                     @endif
                                 </td>
 
-                                <!-- Uang Lembur -->
+                                <!-- Uang Lembur / Insentif Project -->
                                 <td class="px-6 py-4 text-right font-mono text-xs">
-                                    @if ($p->overtime_pay > 0)
+                                    @if (($p->user->employment_type ?? '') === 'INTERN')
+                                        @if ($p->overtime_pay > 0)
+                                            <span
+                                                class="text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                                +Rp{{ number_format($p->overtime_pay, 0, ',', '.') }}
+                                            </span>
+                                            <div class="text-[10px] text-emerald-600 font-sans mt-0.5">Insentif Proyek
+                                            </div>
+                                        @else
+                                            <span class="text-slate-300">Rp0</span>
+                                        @endif
+                                    @elseif ($p->overtime_pay > 0)
                                         <span
                                             class="text-amber-600 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
                                             +Rp{{ number_format($p->overtime_pay, 0, ',', '.') }}
@@ -281,10 +315,62 @@
                                         </span>
                                     @endif
                                 </td>
+
+                                <!-- Slip Gaji Actions -->
+                                <td class="px-6 py-4 text-center">
+                                    <div class="flex items-center justify-center gap-1.5">
+                                        <button type="button"
+                                            onclick="openSlipModal({
+                                                id: '{{ $p->id }}',
+                                                docNumber: 'CHR-PAY/{{ $p->year }}{{ sprintf('%02d', $p->month) }}/{{ strtoupper(substr($p->id, 0, 8)) }}',
+                                                userName: '{{ addslashes($p->user->name ?? 'User') }}',
+                                                userEmail: '{{ addslashes($p->user->email ?? '-') }}',
+                                                employmentType: '{{ $p->user->employment_type ?? 'KARTAP' }}',
+                                                bankAccount: '{{ addslashes($p->user->bank_name ? ($p->user->bank_name . ' - ' . $p->user->bank_account_number) : 'Tunai / Belum Terdaftar') }}',
+                                                period: '{{ \Carbon\Carbon::create($p->year, $p->month, 1)->translatedFormat('F Y') }}',
+                                                dailyRate: 'Rp {{ number_format($p->daily_salary_rate, 0, ',', '.') }}/hr',
+                                                workingDays: '{{ $p->total_working_days }}',
+                                                onsiteDays: '{{ $p->total_present_onsite }}',
+                                                wfhDays: '{{ $p->total_wfh_days }}',
+                                                sickDays: '{{ $p->total_sick_days ?? 0 }}',
+                                                permitDays: '{{ $p->total_permit_days ?? 0 }}',
+                                                overtimeHours: '{{ $p->total_overtime_hours }}',
+                                                basicSalary: 'Rp {{ number_format(($p->user->employment_type ?? '') === 'INTERN' ? ($p->user->basic_salary ?? 0) : ($p->gross_salary - $p->overtime_pay), 0, ',', '.') }}',
+                                                overtimePay: 'Rp {{ number_format($p->overtime_pay, 0, ',', '.') }}',
+                                                grossSalary: 'Rp {{ number_format($p->gross_salary, 0, ',', '.') }}',
+                                                wfhDeduction: 'Rp {{ number_format($p->wfh_deduction_amount, 0, ',', '.') }}',
+                                                sickDeduction: 'Rp {{ number_format(($p->total_sick_days ?? 0) * $p->daily_salary_rate, 0, ',', '.') }}',
+                                                permitDeduction: 'Rp {{ number_format(($p->total_permit_days ?? 0) * $p->daily_salary_rate, 0, ',', '.') }}',
+                                                leaveDeduction: 'Rp {{ number_format($p->leave_deduction_amount ?? 0, 0, ',', '.') }}',
+                                                totalDeduction: 'Rp {{ number_format($p->wfh_deduction_amount + ($p->leave_deduction_amount ?? 0), 0, ',', '.') }}',
+                                                netSalary: 'Rp {{ number_format($p->net_salary, 0, ',', '.') }}',
+                                                terbilang: '{{ addslashes(\App\Helpers\NumberHelper::terbilang($p->net_salary)) }}',
+                                                status: '{{ $p->status }}',
+                                                pdfUrl: '{{ route('reports.payrolls.pdf', $p->id) }}'
+                                            })"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 transition cursor-pointer"
+                                            title="Lihat Rincian Slip Lengkap">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            <span>Rincian</span>
+                                        </button>
+
+                                        <a href="{{ route('reports.payrolls.pdf', $p->id) }}"
+                                            class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-slate-900 text-white hover:bg-slate-800 transition shadow-2xs"
+                                            title="Unduh Berkas PDF">
+                                            <svg class="w-3.5 h-3.5 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                            </svg>
+                                            <span>PDF</span>
+                                        </a>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-12 text-center text-slate-400 text-xs">
+                                <td colspan="8" class="px-6 py-12 text-center text-slate-400 text-xs">
                                     Tidak ada data slip gaji pada periode yang dipilih. Silakan generate payroll di menu
                                     Finance atau ubah filter periode.
                                 </td>
@@ -293,7 +379,15 @@
                     </tbody>
                 </table>
             </div>
+
+            @if ($payrolls->hasPages())
+                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
+                    {{ $payrolls->links() }}
+                </div>
+            @endif
         </div>
+
+        @include('partials.slip-modal')
 
     </div>
 @endsection
