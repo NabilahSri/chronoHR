@@ -1,0 +1,79 @@
+<?php
+
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Approval\LeaveApprovalController;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Executive\DashboardController as ExecutiveDashboardController;
+use App\Http\Controllers\Finance\PayrollController;
+use App\Http\Controllers\Finance\ProjectIncentiveController;
+use Illuminate\Support\Facades\Route;
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
+
+// IoT Hardware Heartbeat & Sync Endpoint (Unauthenticated, CSRF excluded)
+Route::post('/devices/heartbeat', [\App\Http\Controllers\Admin\DeviceController::class, 'heartbeat'])->name('devices.heartbeat');
+
+Route::middleware('guest')->group(function () {
+    Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [LoginController::class, 'login'])->name('login.store');
+});
+
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // User Self-Service Profile Routes
+    Route::get('/profile', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [\App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+
+    // Super Admin Routes
+    Route::middleware('role:super_admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/', fn() => redirect()->route('admin.dashboard'));
+        Route::resource('users', UserController::class)->except(['show']);
+        Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
+        Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+
+        // IoT Device & Hardware Maintenance
+        Route::resource('devices', \App\Http\Controllers\Admin\DeviceController::class)->except(['show', 'create', 'edit']);
+        Route::patch('/devices/{device}/maintenance', [\App\Http\Controllers\Admin\DeviceController::class, 'toggleMaintenance'])->name('devices.maintenance');
+        Route::patch('/devices/{device}/mode', [\App\Http\Controllers\Admin\DeviceController::class, 'setMode'])->name('devices.mode');
+
+        // Attendance Logs
+        Route::get('/attendances', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendances.index');
+    });
+
+    // Finance & HRD Routes
+    Route::middleware('role:finance')->prefix('finance')->name('finance.')->group(function () {
+        Route::get('/payrolls', [PayrollController::class, 'index'])->name('payroll.index');
+        Route::post('/payrolls/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
+        Route::post('/payrolls/publish', [PayrollController::class, 'publish'])->name('payroll.publish');
+
+        Route::get('/incentives', [ProjectIncentiveController::class, 'index'])->name('incentives.index');
+        Route::post('/incentives', [ProjectIncentiveController::class, 'store'])->name('incentives.store');
+    });
+
+    // Executive / CEO Routes
+    Route::middleware('role:ceo')->prefix('executive')->name('executive.')->group(function () {
+        Route::get('/dashboard', [ExecutiveDashboardController::class, 'index'])->name('dashboard');
+    });
+
+    // Leave Approvals Route (Super Admin or User with can_approve_leaves)
+    Route::prefix('approvals')->name('approval.')->group(function () {
+        Route::get('/', [LeaveApprovalController::class, 'index'])->name('index');
+        Route::patch('/{leaveRequest}/approve', [LeaveApprovalController::class, 'approve'])->name('approve');
+        Route::patch('/{leaveRequest}/reject', [LeaveApprovalController::class, 'reject'])->name('reject');
+    });
+
+    // Reports & Rekapitulasi Routes (Super Admin, CEO, Finance)
+    Route::middleware('role:super_admin,ceo,finance')->prefix('reports')->name('reports.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
+        Route::get('/attendances', [\App\Http\Controllers\ReportController::class, 'attendances'])->name('attendances');
+        Route::get('/payrolls', [\App\Http\Controllers\ReportController::class, 'payrolls'])->name('payrolls');
+        Route::get('/leaves', [\App\Http\Controllers\ReportController::class, 'leaves'])->name('leaves');
+    });
+});
+
