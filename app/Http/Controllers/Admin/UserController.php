@@ -16,6 +16,9 @@ class UserController extends Controller
     public function index(Request $request): View
     {
         $search = $request->query('search');
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
 
         $users = User::with('roles')
             ->when($search, function ($query, $search) {
@@ -24,7 +27,8 @@ class UserController extends Controller
                     ->orWhere('rfid_uid', 'like', "%{$search}%");
             })
             ->latest()
-            ->paginate(15);
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('admin.users.index', compact('users', 'search'));
     }

@@ -25,33 +25,54 @@ class AttendanceController extends Controller
     public function index(Request $request): View
     {
         $search = $request->input('search');
-        $today = now()->toDateString();
+        $userId = $request->input('user_id');
+        $today = $request->input('date', now()->toDateString());
+        $status = $request->input('status');
+        $isLate = $request->input('is_late');
 
         $query = Attendance::with(['user.roles'])->whereDate('date', $today);
 
-        // Pencarian murni berdasarkan nama karyawan
+        if ($userId) {
+            $query->where('user_id', $userId);
+        }
+
+        // Pencarian berdasarkan nama atau email karyawan
         if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
-        // Statistik presensi hari ini
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        if ($isLate !== null && $isLate !== '') {
+            $query->where('is_late', (bool) $isLate);
+        }
+
+        // Statistik presensi pada tanggal terpilih
         $statsToday = Attendance::whereDate('date', $today);
         $stats = [
             'total' => (clone $statsToday)->count(),
             'onsite' => (clone $statsToday)->where('status', 'HADIR_ON_SITE')->count(),
-            'wfh' => (clone $statsToday)->where('status', 'WFH')->count(),
+            'wfa' => (clone $statsToday)->where('status', 'WFA')->count(),
             'late' => (clone $statsToday)->where('is_late', true)->count(),
             'leaves' => (clone $statsToday)->whereIn('status', ['SAKIT', 'IZIN'])->count(),
         ];
 
         $attendances = $query->orderBy('time_in', 'desc')->paginate(15)->withQueryString();
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+
+        $attendances = $query->orderBy('time_in', 'desc')->paginate($perPage)->withQueryString();
 
         // Data titik acuan kantor untuk visualisasi geofence
         $officeSettings = $this->attendanceService->getOfficeSettings();
 
-        // Daftar personil untuk modal presensi mandiri / simulasi
+        // Daftar personil untuk filter & modal presensi mandiri
         $users = User::select('id', 'name', 'employment_type', 'email')
             ->orderBy('name')
             ->get();
@@ -60,7 +81,10 @@ class AttendanceController extends Controller
             'attendances',
             'stats',
             'search',
+            'userId',
             'today',
+            'status',
+            'isLate',
             'officeSettings',
             'users'
         ));
@@ -75,7 +99,7 @@ class AttendanceController extends Controller
             'user_id' => 'nullable|uuid|exists:users,id',
             'latitude' => 'required|numeric|between:-90,90',
             'longitude' => 'required|numeric|between:-180,180',
-            'presence_type' => 'required|in:ON_SITE,WFH,AUTO',
+            'presence_type' => 'required|in:ON_SITE,WFA,AUTO',
             'notes' => 'nullable|string|max:255',
         ]);
 
@@ -124,5 +148,45 @@ class AttendanceController extends Controller
             }
             throw $e;
         }
+    }
+
+    /**
+     * Koreksi atau Input Presensi Manual oleh Super Admin (Attendance Override)
+     */
+    public function manualOverride(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'user_id' => 'required|uuid|exists:users,id',
+            'date' => 'required|date',
+            'status' => 'required|in:HADIR_ON_SITE,WFA,SAKIT,IZIN,ALPHA',
+            'time_in' => 'nullable|string|max:8',
+            'time_out' => 'nullable|string|max:8',
+            'is_late' => 'nullable|boolean',
+            'overtime_hours' => 'nullable|integer|min:0|max:24',
+            'method' => 'nullable|in:RFID,FACIAL_LOCATION,FORM',
+        ]);
+
+        $user = User::findOrFail($validated['user_id']);
+        $timeIn = !empty($validated['time_in']) ? (strlen($validated['time_in']) === 5 ? $validated['time_in'] . ':00' : $validated['time_in']) : null;
+        $timeOut = !empty($validated['time_out']) ? (strlen($validated['time_out']) === 5 ? $validated['time_out'] . ':00' : $validated['time_out']) : null;
+
+        Attendance::updateOrCreate(
+            [
+                'user_id' => $user->id,
+                'date' => $validated['date'],
+            ],
+            [
+                'status' => $validated['status'],
+                'method' => $validated['method'] ?? ($validated['status'] === 'HADIR_ON_SITE' ? 'RFID' : ($validated['status'] === 'WFA' ? 'FACIAL_LOCATION' : 'FORM')),
+                'time_in' => $timeIn,
+                'time_out' => $timeOut,
+                'is_late' => (bool) ($validated['is_late'] ?? false),
+                'overtime_hours' => (int) ($validated['overtime_hours'] ?? 0),
+            ]
+        );
+
+        return redirect()
+            ->route('admin.attendances.index', ['date' => $validated['date']])
+            ->with('success', "Log presensi manual untuk {$user->name} pada tanggal {$validated['date']} berhasil diperbarui.");
     }
 }

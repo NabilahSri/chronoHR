@@ -57,7 +57,7 @@
                     <span
                         class="text-xs font-bold text-slate-900 max-w-[120px] truncate leading-tight">{{ auth()->user()->name }}</span>
                     <span
-                        class="text-[10px] font-medium text-sky-600 truncate">{{ auth()->user()->roles->first()?->display_name ?? 'Staff' }}</span>
+                        class="text-[10px] font-medium text-sky-600 truncate">{{ auth()->user()->roles->first()?->display_name ?? 'Staf' }}</span>
                 </div>
                 <svg class="w-3.5 h-3.5 text-slate-400 transition-transform duration-150 ml-0.5" id="user-chevron-icon"
                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -85,7 +85,7 @@
                         @endforeach
                         @if (auth()->user()->can_approve_leaves)
                             <span
-                                class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Approver</span>
+                                class="inline-flex items-center px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">Penyetuju Izin</span>
                         @endif
                     </div>
                 </div>

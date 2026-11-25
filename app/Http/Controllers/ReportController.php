@@ -141,14 +141,17 @@ class ReportController extends Controller
         $stats = [
             'total' => $statsData->count(),
             'on_site' => $statsData->where('status', 'HADIR_ON_SITE')->count(),
-            'wfh' => $statsData->where('status', 'WFH')->count(),
+            'wfa' => $statsData->where('status', 'WFA')->count(),
             'sakit_izin' => $statsData->whereIn('status', ['SAKIT', 'IZIN'])->count(),
             'late' => $statsData->where('is_late', true)->count(),
             'total_overtime' => $statsData->sum('overtime_hours'),
         ];
 
         // Pagination untuk tabel data
-        $attendances = $query->orderBy('date', 'desc')->orderBy('time_in', 'desc')->paginate(15)->withQueryString();
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+        $attendances = $query->orderBy('date', 'desc')->orderBy('time_in', 'desc')->paginate($perPage)->withQueryString();
 
         $users = User::orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
 
@@ -206,7 +209,7 @@ class ReportController extends Controller
             'Jam Masuk (WIB)',
             'Jam Pulang (WIB)',
             'Status Kehadiran',
-            'Metode Check-In',
+            'Metode Presensi',
             'Ketepatan Waktu',
             'Menit Terlambat',
             'Lembur (Jam)',
@@ -265,21 +268,49 @@ class ReportController extends Controller
 
         // Ambil data untuk ringkasan statistik (semua baris yang sesuai filter)
         $statsData = (clone $query)->get();
+
+        $incentiveQuery = \App\Models\ProjectIncentive::whereMonth('given_date', $month)
+            ->whereYear('given_date', $year);
+        if ($userId) {
+            $incentiveQuery->where('user_id', $userId);
+        }
+        if ($employmentType) {
+            $incentiveQuery->whereHas('user', function ($q) use ($employmentType) {
+                $q->where('employment_type', $employmentType);
+            });
+        }
+        $totalIncentives = (float) $incentiveQuery->sum('amount');
+
+        $regularOvertimePay = (float) $statsData->filter(fn ($p) => ($p->user->employment_type ?? '') !== 'INTERN')->sum('overtime_pay');
+
         $stats = [
             'total_count' => $statsData->count(),
             'total_net' => (float) $statsData->sum('net_salary'),
             'total_gross' => (float) $statsData->sum('gross_salary'),
-            'total_wfh_deduction' => (float) $statsData->sum('wfh_deduction_amount'),
+            'total_wfa_deduction' => (float) $statsData->sum('wfa_deduction_amount'),
             'total_leave_deduction' => (float) $statsData->sum('leave_deduction_amount'),
-            'total_overtime_pay' => (float) $statsData->sum('overtime_pay'),
+            'total_sanction_deduction' => (float) $statsData->sum('sanction_deduction_amount'),
+            'total_overtime_pay' => $regularOvertimePay,
+            'total_incentives' => $totalIncentives,
             'published_count' => $statsData->where('status', 'PUBLISHED')->count(),
             'draft_count' => $statsData->where('status', 'DRAFT')->count(),
+            'bank_ready_count' => $statsData->filter(fn ($p) => !empty($p->user->bank_account_number))->count(),
+            'bank_missing_count' => $statsData->filter(fn ($p) => empty($p->user->bank_account_number))->count(),
         ];
 
         // Pagination untuk tabel data
-        $payrolls = $query->orderBy('net_salary', 'desc')->paginate(15)->withQueryString();
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+        $payrolls = $query->orderBy('net_salary', 'desc')->paginate($perPage)->withQueryString();
 
         $users = User::orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
+
+        $payrollSettings = [
+            'payday_date' => Setting::getValue('payday_date', 25),
+            'wfa_kartap_pct' => Setting::getValue('wfa_deduction_kartap_pct', 10),
+            'wfa_pkwt_pct' => Setting::getValue('wfa_deduction_pkwt_pct', 30),
+        ];
 
         return view('reports.payrolls', compact(
             'payrolls',
@@ -288,7 +319,8 @@ class ReportController extends Controller
             'month',
             'year',
             'userId',
-            'employmentType'
+            'employmentType',
+            'payrollSettings'
         ));
     }
 
@@ -324,20 +356,23 @@ class ReportController extends Controller
             'Nama Karyawan',
             'Email',
             'Ikatan Kerja',
+            'Nama Bank',
+            'Nomor Rekening',
+            'Nama Pemilik Rekening',
             'Periode Bulan',
             'Periode Tahun',
             'Hari Kerja Efektif',
-            'Hadir On-Site (Hari)',
-            'WFH (Hari)',
+            'Hadir Kantor (Hari)',
+            'WFA (Hari)',
             'Sakit (Hari)',
             'Izin (Hari)',
             'Lembur (Jam)',
             'Gaji Pokok (Rp)',
             'Tarif Harian (Rp)',
-            'Potongan WFH (Rp)',
+            'Potongan WFA (Rp)',
             'Potongan Sakit/Izin (Rp)',
-            'Uang Lembur (Rp)',
-            'Gaji Bersih / Netto (Rp)',
+            'Uang Lembur / Insentif (Rp)',
+            'Gaji Bersih Diterima (Rp)',
             'Status Slip',
         ];
 
@@ -349,17 +384,20 @@ class ReportController extends Controller
                 $p->user->name ?? 'User Terhapus',
                 $p->user->email ?? '-',
                 $p->user->employment_type ?? '-',
+                $p->user->bank_name ?: '-',
+                $p->user->bank_account_number ?: '-',
+                $p->user->bank_account_holder ?: ($p->user->name ?? '-'),
                 $p->month,
                 $p->year,
                 $p->total_working_days,
                 $p->total_present_onsite,
-                $p->total_wfh_days,
+                $p->total_wfa_days,
                 $p->total_sick_days ?? 0,
                 $p->total_permit_days ?? 0,
                 $p->total_overtime_hours,
                 $p->user->basic_salary ?? 0,
                 $p->daily_salary_rate,
-                $p->wfh_deduction_amount,
+                $p->wfa_deduction_amount,
                 $p->leave_deduction_amount ?? 0,
                 $p->overtime_pay,
                 $p->net_salary,
@@ -385,6 +423,8 @@ class ReportController extends Controller
             'name' => Setting::getValue('office_name', 'PT ChronoHR Teknologi Indonesia'),
             'address' => Setting::getValue('office_address', 'Gedung Pusat ChronoHR, Jakarta'),
             'payday' => Setting::getValue('payday_date', 25),
+            'wfa_kartap_pct' => Setting::getValue('wfa_deduction_kartap_pct', 10),
+            'wfa_pkwt_pct' => Setting::getValue('wfa_deduction_pkwt_pct', 30),
         ];
 
         $pdf = Pdf::loadView('reports.slip_pdf', compact(
@@ -406,7 +446,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Laporan 3: Rekapitulasi Pengajuan Cuti, Izin & WFH
+     * Laporan 3: Rekapitulasi Pengajuan Cuti, Izin & WFA
      */
     public function leaves(Request $request): View
     {
@@ -441,13 +481,16 @@ class ReportController extends Controller
             'approved' => $statsData->where('status', 'APPROVED')->count(),
             'pending' => $statsData->where('status', 'PENDING')->count(),
             'rejected' => $statsData->where('status', 'REJECTED')->count(),
-            'wfh_count' => $statsData->where('type', 'WFH')->count(),
+            'wfa_count' => $statsData->where('type', 'WFA')->count(),
             'sakit_count' => $statsData->where('type', 'SAKIT')->count(),
             'izin_count' => $statsData->where('type', 'IZIN')->count(),
         ];
 
         // Pagination untuk tabel data
-        $leaves = $query->orderBy('start_date', 'desc')->paginate(15)->withQueryString();
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+        $leaves = $query->orderBy('start_date', 'desc')->paginate($perPage)->withQueryString();
 
         $users = User::orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
 
@@ -547,7 +590,11 @@ class ReportController extends Controller
 
         $usersQuery = User::with(['dailyReports' => function ($q) use ($date) {
             $q->whereDate('date', $date);
-        }])->orderBy('name');
+        }])
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('is_attendance_required', false);
+            })
+            ->orderBy('name');
 
         if ($search) {
             $usersQuery->where(function ($q) use ($search) {
@@ -604,8 +651,13 @@ class ReportController extends Controller
             });
         }
 
-        $users = $usersQuery->paginate(15)->withQueryString();
-        $allEmployees = User::orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+        $users = $usersQuery->paginate($perPage)->withQueryString();
+        $allEmployees = User::whereDoesntHave('roles', function ($q) {
+            $q->where('is_attendance_required', false);
+        })->orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
 
         return view('reports.daily_tasks', compact(
             'users',
@@ -630,7 +682,11 @@ class ReportController extends Controller
 
         $usersQuery = User::with(['dailyReports' => function ($q) use ($date) {
             $q->whereDate('date', $date);
-        }])->orderBy('name');
+        }])
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('is_attendance_required', false);
+            })
+            ->orderBy('name');
 
         if ($search) {
             $usersQuery->where(function ($q) use ($search) {
@@ -668,12 +724,12 @@ class ReportController extends Controller
             'Email',
             'Ikatan Kerja',
             'Status Laporan',
-            'Jam Submit Pagi',
-            'Rencana Task Pagi (Check-In Plan)',
-            'Jam Submit Sore',
-            'Task Selesai (Completed)',
-            'Task Belum Selesai (Pending)',
-            'Task Tambahan (Ad-Hoc)',
+            'Jam Kirim Pagi',
+            'Rencana Tugas Pagi',
+            'Jam Kirim Sore',
+            'Tugas Selesai',
+            'Tugas Belum Selesai',
+            'Tugas Tambahan',
         ];
 
         $dataRows = [];

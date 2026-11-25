@@ -84,9 +84,9 @@ class DailyReportSeeder extends Seeder
                 ['user_id' => $users['manager@test.com'], 'date' => $today],
                 [
                     'morning_submitted_at' => '08:01:00',
-                    'morning_planned_tasks' => "1. Review dan verifikasi permohonan cuti tahunan & WFH divisi\n2. Evaluasi rekapitulasi keterlambatan presensi mingguan\n3. Meeting 1-on-1 dengan personil magang",
+                    'morning_planned_tasks' => "1. Review dan verifikasi permohonan cuti tahunan & WFA divisi\n2. Evaluasi rekapitulasi keterlambatan presensi mingguan\n3. Meeting 1-on-1 dengan personil magang",
                     'evening_submitted_at' => '16:50:00',
-                    'evening_completed_tasks' => "1. Review dan verifikasi permohonan cuti tahunan & WFH divisi (Semua permohonan selesai diproses)\n3. Meeting 1-on-1 dengan personil magang (Selesai)",
+                    'evening_completed_tasks' => "1. Review dan verifikasi permohonan cuti tahunan & WFA divisi (Semua permohonan selesai diproses)\n3. Meeting 1-on-1 dengan personil magang (Selesai)",
                     'evening_pending_tasks' => "2. Evaluasi keterlambatan mingguan (Menunggu rekapitulasi audit HRD)",
                     'evening_additional_tasks' => "1. Sosialisasi SOP baru presensi RFID kepada divisi operasional",
                     'status' => 'COMPLETED',
@@ -116,7 +116,7 @@ class DailyReportSeeder extends Seeder
                 ['user_id' => $users['intern@test.com'], 'date' => $today],
                 [
                     'morning_submitted_at' => '08:05:00',
-                    'morning_planned_tasks' => "1. Mempelajari dokumentasi framework Laravel 12 & Tailwind CSS\n2. Merapikan form-form agar full-width sesuai standar ChronoHR\n3. Membantu QA testing alur pengajuan WFH",
+                    'morning_planned_tasks' => "1. Mempelajari dokumentasi framework Laravel 12 & Tailwind CSS\n2. Merapikan form-form agar full-width sesuai standar ChronoHR\n3. Membantu QA testing alur pengajuan WFA",
                     'evening_submitted_at' => null,
                     'evening_completed_tasks' => null,
                     'evening_pending_tasks' => null,
@@ -132,7 +132,7 @@ class DailyReportSeeder extends Seeder
                 ['user_id' => $users['finance@test.com'], 'date' => $today],
                 [
                     'morning_submitted_at' => '08:30:00',
-                    'morning_planned_tasks' => "1. Verifikasi kalkulasi potongan gaji WFH KARTAP & PKWT\n2. Rekonsiliasi pembayaran insentif proyek magang\n3. Persiapan rilis draft slip gaji bulanan",
+                    'morning_planned_tasks' => "1. Verifikasi kalkulasi potongan gaji WFA KARTAP & PKWT\n2. Rekonsiliasi pembayaran insentif proyek magang\n3. Persiapan rilis draft slip gaji bulanan",
                     'evening_submitted_at' => null,
                     'evening_completed_tasks' => null,
                     'evening_pending_tasks' => null,

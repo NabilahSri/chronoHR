@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Edit Karyawan — ChronoHR ')
+@section('title', 'Ubah Karyawan - ChronoHR')
 @section('page_title', 'Perbarui Data Karyawan')
 
 @section('content')
@@ -8,7 +8,7 @@
         <div class="bg-white/95 rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs backdrop-blur-xs">
             <div class="border-b border-slate-100 pb-5 mb-6 flex items-center justify-between">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900 tracking-tight">Edit Informasi Personil</h2>
+                    <h2 class="text-base font-bold text-slate-900 tracking-tight">Ubah Informasi Personil</h2>
                     <p class="text-xs text-slate-500 mt-1">Mengubah data profil, nomor kartu RFID, serta hak akses peran
                         sistem.</p>
                 </div>
@@ -53,11 +53,19 @@
                             class="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">UID Kartu RFID
-                            (NodeMCU)</label>
-                        <input type="text" name="rfid_uid" value="{{ old('rfid_uid', $user->rfid_uid) }}"
+                        <div class="flex items-center justify-between mb-2">
+                            <label for="rfid_uid_input" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                                UID Kartu RFID (NodeMCU)
+                            </label>
+                            <button type="button" onclick="fetchLatestRfidScan()"
+                                class="text-[11px] font-bold text-sky-700 hover:text-sky-900 underline cursor-pointer">
+                                Ambil dari Tap Alat RFID
+                            </button>
+                        </div>
+                        <input type="text" id="rfid_uid_input" name="rfid_uid" value="{{ old('rfid_uid', $user->rfid_uid) }}"
                             placeholder="Contoh: 1234567890"
                             class="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 placeholder-slate-400 text-sm font-mono focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
+                        <p id="rfid_scan_hint" class="text-[11px] text-slate-400 mt-1">Klik "Ambil dari Tap Alat RFID" setelah menempelkan kartu baru ke NodeMCU.</p>
                         @error('rfid_uid')
                             <p class="text-rose-500 text-xs mt-1.5 font-medium">{{ $message }}</p>
                         @enderror
@@ -73,18 +81,18 @@
                             class="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
                             <option value="KARTAP"
                                 {{ old('employment_type', $user->employment_type) == 'KARTAP' ? 'selected' : '' }}>Karyawan
-                                Tetap (KARTAP) — Potongan WFH {{ \App\Models\Setting::getValue('wfh_deduction_kartap_pct', 10) }}%</option>
+                                Tetap (KARTAP) - Potongan WFA {{ \App\Models\Setting::getValue('wfa_deduction_kartap_pct', 10) }}%</option>
                             <option value="PKWT"
                                 {{ old('employment_type', $user->employment_type) == 'PKWT' ? 'selected' : '' }}>Kontrak
-                                Kerja (PKWT) — Potongan WFH {{ \App\Models\Setting::getValue('wfh_deduction_pkwt_pct', 30) }}%</option>
+                                Kerja (PKWT) - Potongan WFA {{ \App\Models\Setting::getValue('wfa_deduction_pkwt_pct', 30) }}%</option>
                             <option value="INTERN"
                                 {{ old('employment_type', $user->employment_type) == 'INTERN' ? 'selected' : '' }}>Magang /
-                                PKL (INTERN) — Insentif Proyek</option>
+                                PKL - Insentif Proyek</option>
                         </select>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Gaji Pokok
-                            Bulanan (IDR)</label>
+                            Bulanan (Rp)</label>
                         <input type="number" name="basic_salary" value="{{ old('basic_salary', $user->basic_salary) }}"
                             required
                             class="w-full px-4 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-sm font-mono focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all">
@@ -97,7 +105,7 @@
                 <!-- Roles Checklist -->
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">Penugasan Peran
-                        Sistem (Roles)</label>
+                        Sistem</label>
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                         @php $userRoleIds = $user->roles->pluck('id')->toArray(); @endphp
                         @foreach ($roles as $role)
@@ -122,7 +130,7 @@
                         {{ old('can_approve_leaves', $user->can_approve_leaves) ? 'checked' : '' }}
                         class="mt-1 rounded text-sky-600 focus:ring-sky-500">
                     <label for="can_approve" class="cursor-pointer">
-                        <p class="text-xs font-bold text-slate-900">Otoritas Persetujuan Cuti & Izin (Approver)</p>
+                        <p class="text-xs font-bold text-slate-900">Otoritas Persetujuan Cuti & Izin (Penyetuju)</p>
                         <p class="text-[11px] text-slate-500 mt-0.5 leading-relaxed">
                             Centang opsi ini jika personil berhak menyetujui atau menolak permohonan cuti anggota tim
                             melalui portal web.
@@ -144,4 +152,26 @@
             </form>
         </div>
     </div>
+
+    <script>
+        function fetchLatestRfidScan() {
+            const hint = document.getElementById('rfid_scan_hint');
+            hint.textContent = 'Mengambil pindaian kartu terakhir dari alat NodeMCU...';
+            fetch('{{ route('admin.devices.latest-scan') }}')
+                .then(res => res.json())
+                .then(data => {
+                    if (data.rfid_uid) {
+                        document.getElementById('rfid_uid_input').value = data.rfid_uid;
+                        hint.textContent = 'Terdeteksi UID: ' + data.rfid_uid + ' dari ' + (data.device || 'NodeMCU') + ' (' + (data.scanned_at || 'baru saja') + ')';
+                        hint.className = 'text-[11px] text-emerald-700 font-semibold mt-1';
+                    } else {
+                        hint.textContent = 'Belum ada kartu RFID yang ditempelkan pada alat NodeMCU.';
+                        hint.className = 'text-[11px] text-amber-700 font-semibold mt-1';
+                    }
+                })
+                .catch(() => {
+                    hint.textContent = 'Gagal menghubungi server untuk mengambil pindaian RFID.';
+                });
+        }
+    </script>
 @endsection

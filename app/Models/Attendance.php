@@ -12,6 +12,8 @@ class Attendance extends Model
 {
     use HasUuids;
 
+    protected $appends = ['face_image_url', 'checkout_face_image_url'];
+
     protected function casts(): array
     {
         return [
@@ -19,6 +21,20 @@ class Attendance extends Model
             'is_late' => 'boolean',
             'overtime_hours' => 'integer',
         ];
+    }
+
+    public function getFaceImageUrlAttribute(): ?string
+    {
+        return $this->face_image_path
+            ? url('storage/' . ltrim($this->face_image_path, '/'))
+            : null;
+    }
+
+    public function getCheckoutFaceImageUrlAttribute(): ?string
+    {
+        return $this->checkout_face_image_path
+            ? url('storage/' . ltrim($this->checkout_face_image_path, '/'))
+            : null;
     }
 
     public function user(): BelongsTo

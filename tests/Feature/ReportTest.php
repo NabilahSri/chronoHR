@@ -112,7 +112,7 @@ class ReportTest extends TestCase
 
         $response->assertOk();
         $response->assertDontSee('name="status"', false);
-        $response->assertSee('Export ke Excel');
+        $response->assertSee('Ekspor ke Excel');
     }
 
     public function test_admin_can_update_and_view_payday_setting(): void
@@ -127,8 +127,8 @@ class ReportTest extends TestCase
         $updateResponse = $this->actingAs($admin)->put(route('admin.settings.update'), [
             'late_tolerance_minutes' => 15,
             'overtime_tolerance_minutes' => 30,
-            'wfh_deduction_kartap_pct' => 10,
-            'wfh_deduction_pkwt_pct' => 30,
+            'wfa_deduction_kartap_pct' => 10,
+            'wfa_deduction_pkwt_pct' => 30,
             'payday_date' => 28,
         ]);
 
@@ -143,9 +143,9 @@ class ReportTest extends TestCase
         $response = $this->actingAs($admin)->get(route('reports.daily-tasks'));
 
         $response->assertOk();
-        $response->assertSee('Monitoring Laporan Task Harian');
+        $response->assertSee('Pemantauan Laporan Tugas Harian');
         $response->assertSee('Rencana Pagi Masuk');
-        $response->assertSee('Export ke Excel');
+        $response->assertSee('Ekspor ke Excel');
     }
 
     public function test_super_admin_can_export_daily_tasks(): void
@@ -287,10 +287,10 @@ class ReportTest extends TestCase
                 'year' => 2026,
                 'total_working_days' => 22,
                 'total_present_onsite' => 20,
-                'total_wfh_days' => 2,
+                'total_wfa_days' => 2,
                 'total_overtime_hours' => 5,
                 'daily_salary_rate' => 350000,
-                'wfh_deduction_amount' => 70000,
+                'wfa_deduction_amount' => 70000,
                 'overtime_pay' => 105000,
                 'gross_salary' => 7805000,
                 'net_salary' => 7735000,
@@ -305,7 +305,7 @@ class ReportTest extends TestCase
         $this->assertStringContainsString('.pdf', $response->headers->get('Content-Disposition'));
     }
 
-    public function test_can_download_payslip_pdf_with_detailed_wfh_and_leave_deductions(): void
+    public function test_can_download_payslip_pdf_with_detailed_wfa_and_leave_deductions(): void
     {
         $admin = User::where('email', 'admin@test.com')->first();
 
@@ -325,12 +325,12 @@ class ReportTest extends TestCase
             'year' => 2026,
             'total_working_days' => 22,
             'total_present_onsite' => 18,
-            'total_wfh_days' => 2,
+            'total_wfa_days' => 2,
             'total_sick_days' => 1,
             'total_permit_days' => 1,
             'total_overtime_hours' => 0,
             'daily_salary_rate' => 227272.73,
-            'wfh_deduction_amount' => 45454.55,
+            'wfa_deduction_amount' => 45454.55,
             'leave_deduction_amount' => 454545.45,
             'overtime_pay' => 0,
             'gross_salary' => 5000000,
@@ -342,5 +342,51 @@ class ReportTest extends TestCase
 
         $response->assertOk();
         $this->assertEquals('application/pdf', $response->headers->get('Content-Type'));
+    }
+
+    public function test_can_preview_payslip_pdf_inline_and_filter_finance_payrolls(): void
+    {
+        $admin = User::where('email', 'admin@test.com')->first();
+
+        $payroll = \App\Models\Payroll::firstOrCreate(
+            [
+                'user_id' => $admin->id,
+                'month' => 10,
+                'year' => 2026,
+            ],
+            [
+                'total_working_days' => 22,
+                'total_present_onsite' => 20,
+                'total_wfa_days' => 2,
+                'total_overtime_hours' => 0,
+                'daily_salary_rate' => 300000,
+                'wfa_deduction_amount' => 60000,
+                'overtime_pay' => 0,
+                'gross_salary' => 6600000,
+                'net_salary' => 6540000,
+                'status' => 'PUBLISHED',
+            ]
+        );
+
+        // Filter di halaman Finance Payroll
+        $filterResponse = $this->actingAs($admin)->get(route('finance.payroll.index', [
+            'month' => 10,
+            'year' => 2026,
+            'user_id' => $admin->id,
+            'employment_type' => $admin->employment_type,
+        ]));
+        $filterResponse->assertOk();
+        $filterResponse->assertSee('Filter Periode & Personil Slip Gaji', false);
+        $filterResponse->assertSee('Rincian');
+        $filterResponse->assertSee('Pratinjau');
+
+        // Pratinjau PDF Inline (?preview=1)
+        $previewResponse = $this->actingAs($admin)->get(route('reports.payrolls.pdf', [
+            'payroll' => $payroll->id,
+            'preview' => 1,
+        ]));
+        $previewResponse->assertOk();
+        $this->assertEquals('application/pdf', $previewResponse->headers->get('Content-Type'));
+        $this->assertStringContainsString('inline', $previewResponse->headers->get('Content-Disposition'));
     }
 }

@@ -18,10 +18,10 @@ return new class extends Migration
             $table->integer('year');
             $table->integer('total_working_days')->default(0);
             $table->integer('total_present_onsite')->default(0);
-            $table->integer('total_wfh_days')->default(0);
+            $table->integer('total_wfa_days')->default(0);
             $table->integer('total_overtime_hours')->default(0);
             $table->decimal('daily_salary_rate', 12, 2)->default(0);
-            $table->decimal('wfh_deduction_amount', 12, 2)->default(0);
+            $table->decimal('wfa_deduction_amount', 12, 2)->default(0);
             $table->decimal('overtime_pay', 12, 2)->default(0);
             $table->decimal('gross_salary', 12, 2)->default(0);
             $table->decimal('net_salary', 12, 2)->default(0);

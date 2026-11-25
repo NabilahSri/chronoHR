@@ -12,6 +12,15 @@ class LeaveRequest extends Model
 {
     use HasUuids;
 
+    protected $appends = ['attachment_url'];
+
+    public function getAttachmentUrlAttribute(): ?string
+    {
+        return $this->attachment_path
+            ? url('storage/' . ltrim($this->attachment_path, '/'))
+            : null;
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

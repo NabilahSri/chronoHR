@@ -33,7 +33,7 @@ class DashboardController extends Controller
             'pkwt' => User::where('employment_type', 'PKWT')->count(),
             'intern' => User::where('employment_type', 'INTERN')->count(),
             'today_onsite' => Attendance::where('date', $today)->where('status', 'HADIR_ON_SITE')->count(),
-            'today_wfh' => Attendance::where('date', $today)->where('status', 'WFH')->count(),
+            'today_wfa' => Attendance::where('date', $today)->where('status', 'WFA')->count(),
             'today_late' => Attendance::where('date', $today)->where('is_late', true)->count(),
             'total_devices' => $devices->count(),
             'online_devices' => $devices->filter(fn(Device $d) => $d->isOnline())->count(),

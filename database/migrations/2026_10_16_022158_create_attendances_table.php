@@ -17,7 +17,7 @@ return new class extends Migration
             $table->date('date');
             $table->time('time_in')->nullable();
             $table->time('time_out')->nullable();
-            $table->enum('status', ['HADIR_ON_SITE', 'WFH', 'SAKIT', 'IZIN', 'ALPHA'])->default('ALPHA');
+            $table->enum('status', ['HADIR_ON_SITE', 'WFA', 'SAKIT', 'IZIN', 'ALPHA'])->default('ALPHA');
             $table->enum('method', ['RFID', 'FACIAL_LOCATION', 'FORM'])->nullable();
             $table->string('face_image_path')->nullable();
             $table->decimal('latitude', 10, 8)->nullable();

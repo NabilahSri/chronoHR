@@ -72,13 +72,13 @@ class AttendanceSeeder extends Seeder
                         'overtime_hours' => 0,
                     ]);
                 } elseif ($mod === 3) {
-                    // Work From Home (Face & GPS)
+                    // Work From Anywhere (Face & GPS)
                     Attendance::create([
                         'user_id' => $user->id,
                         'date' => $formattedDate,
                         'time_in' => '08:00:12',
                         'time_out' => '17:02:45',
-                        'status' => 'WFH',
+                        'status' => 'WFA',
                         'method' => 'FACIAL_LOCATION',
                         'is_late' => false,
                         'overtime_hours' => 1,

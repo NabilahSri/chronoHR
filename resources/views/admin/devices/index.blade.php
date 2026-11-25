@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Status & Maintenance Alat IoT — ChronoHR')
+@section('title', 'Status & Pemeliharaan Alat IoT - ChronoHR')
 @section('page_title', 'Status & Pemeliharaan Perangkat IoT')
-@section('page_subtitle', 'Pantau scanner absensi RFID, konfigurasi mode registrasi kartu, dan status operasional perangkat.')
+@section('page_subtitle', 'Pantau pemindai presensi RFID, konfigurasi mode registrasi kartu, dan status operasional perangkat.')
 
 @section('page_actions')
     <button type="button" onclick="document.getElementById('modal-add-device').classList.remove('hidden')"
@@ -26,13 +26,13 @@
                 </div>
             </div>
             <div class="text-3xl font-extrabold text-slate-900 font-mono">{{ $stats['total'] }}</div>
-            <p class="text-xs text-slate-500 mt-2">Unit NodeMCU scanner aktif terdaftar</p>
+            <p class="text-xs text-slate-500 mt-2">Unit pemindai NodeMCU aktif terdaftar</p>
         </div>
 
         <!-- Card 2: Online Devices -->
         <div class="bg-white/95 p-6 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Status Online</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Status Terhubung</span>
                 <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                     <span class="relative flex h-2.5 w-2.5">
                         <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
@@ -41,19 +41,19 @@
                 </div>
             </div>
             <div class="text-3xl font-extrabold text-emerald-600 font-mono">{{ $stats['online'] }}</div>
-            <p class="text-xs text-slate-500 mt-2">Heartbeat terdeteksi < 5 menit terakhir</p>
+            <p class="text-xs text-slate-500 mt-2">Detak sinyal terdeteksi < 5 menit terakhir</p>
         </div>
 
         <!-- Card 3: Maintenance Mode -->
         <div class="bg-white/95 p-6 rounded-3xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
             <div class="flex items-center justify-between mb-3">
-                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Mode Maintenance</span>
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Mode Pemeliharaan</span>
                 <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                 </div>
             </div>
             <div class="text-3xl font-extrabold text-amber-600 font-mono">{{ $stats['maintenance'] }}</div>
-            <p class="text-xs text-slate-500 mt-2">Diisolasi untuk kalibrasi / servis</p>
+            <p class="text-xs text-slate-500 mt-2">Diisolasi untuk kalibrasi / perbaikan</p>
         </div>
 
         <!-- Card 4: Operating Modes -->
@@ -65,9 +65,9 @@
                 </div>
             </div>
             <div class="text-lg font-bold text-slate-900 font-mono">
-                {{ $stats['attendance_mode'] }} Absensi • {{ $stats['registration_mode'] }} Registrasi
+                {{ $stats['attendance_mode'] }} Presensi • {{ $stats['registration_mode'] }} Registrasi
             </div>
-            <p class="text-xs text-slate-500 mt-2">Dapat diubah real-time dari kontrol di bawah</p>
+            <p class="text-xs text-slate-500 mt-2">Dapat diubah langsung dari kontrol di bawah</p>
         </div>
     </div>
 
@@ -91,9 +91,9 @@
                 <select name="status"
                     class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all cursor-pointer">
                     <option value="">Semua Status</option>
-                    <option value="ONLINE" {{ $status === 'ONLINE' ? 'selected' : '' }}>🟢 Online</option>
-                    <option value="OFFLINE" {{ $status === 'OFFLINE' ? 'selected' : '' }}>🔴 Offline</option>
-                    <option value="MAINTENANCE" {{ $status === 'MAINTENANCE' ? 'selected' : '' }}>🟡 Maintenance</option>
+                    <option value="ONLINE" {{ $status === 'ONLINE' ? 'selected' : '' }}>Terhubung</option>
+                    <option value="OFFLINE" {{ $status === 'OFFLINE' ? 'selected' : '' }}>Terputus</option>
+                    <option value="MAINTENANCE" {{ $status === 'MAINTENANCE' ? 'selected' : '' }}>Pemeliharaan</option>
                 </select>
             </div>
 
@@ -102,9 +102,9 @@
                 <select name="mode"
                     class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-sm focus:outline-none focus:bg-white focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition-all cursor-pointer">
                     <option value="">Semua Mode Operasi</option>
-                    <option value="ATTENDANCE" {{ $mode === 'ATTENDANCE' ? 'selected' : '' }}>Mode Absensi</option>
+                    <option value="ATTENDANCE" {{ $mode === 'ATTENDANCE' ? 'selected' : '' }}>Mode Presensi</option>
                     <option value="REGISTRATION" {{ $mode === 'REGISTRATION' ? 'selected' : '' }}>Mode Registrasi</option>
-                    <option value="MAINTENANCE" {{ $mode === 'MAINTENANCE' ? 'selected' : '' }}>Mode Maintenance</option>
+                    <option value="MAINTENANCE" {{ $mode === 'MAINTENANCE' ? 'selected' : '' }}>Mode Pemeliharaan</option>
                 </select>
             </div>
 
@@ -112,12 +112,12 @@
             <div class="flex items-center gap-2">
                 <button type="submit"
                     class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-sm font-semibold shadow-xs transition-all cursor-pointer">
-                    Filter
+                    Saring
                 </button>
                 @if ($search || $status || $mode)
                     <a href="{{ route('admin.devices.index') }}"
                         class="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 font-semibold transition">
-                        Reset
+                        Atur Ulang
                     </a>
                 @endif
             </div>
@@ -129,7 +129,7 @@
         <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
                 <h3 class="text-base font-bold text-slate-900 tracking-tight">Daftar Perangkat NodeMCU RFID</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Tabel operasional scanner RFID, konfigurasi mode kerja, dan pemeliharaan alat.</p>
+                <p class="text-xs text-slate-500 mt-0.5">Tabel operasional pemindai RFID, konfigurasi mode kerja, dan pemeliharaan alat.</p>
             </div>
             <span class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200 shrink-0 self-start sm:self-auto">
                 Total: {{ $devices->total() }} Perangkat
@@ -144,7 +144,7 @@
                         <th scope="col" class="px-6 py-4">Lokasi & Jaringan</th>
                         <th scope="col" class="px-6 py-4">Status Alat</th>
                         <th scope="col" class="px-6 py-4">Mode Operasi</th>
-                        <th scope="col" class="px-6 py-4">Heartbeat Terakhir</th>
+                        <th scope="col" class="px-6 py-4">Sinyal Terakhir</th>
                         <th scope="col" class="px-6 py-4 text-right">Aksi & Kontrol</th>
                     </tr>
                 </thead>
@@ -191,7 +191,7 @@
                                 @if($device->status === 'MAINTENANCE')
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-amber-50 text-amber-700 border border-amber-200">
                                         <span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>
-                                        MAINTENANCE
+                                        PEMELIHARAAN
                                     </span>
                                 @elseif($device->isOnline())
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -199,12 +199,12 @@
                                             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                                             <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                                         </span>
-                                        ONLINE
+                                        TERHUBUNG
                                     </span>
                                 @else
                                     <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
                                         <span class="h-1.5 w-1.5 rounded-full bg-rose-500"></span>
-                                        OFFLINE
+                                        TERPUTUS
                                     </span>
                                 @endif
                             </td>
@@ -214,11 +214,11 @@
                                 <form action="{{ route('admin.devices.mode', $device) }}" method="POST" class="inline-block">
                                     @csrf
                                     @method('PATCH')
-                                    <select name="mode" onchange="this.form.submit()"
+                                    <select name="mode" data-no-search="true" onchange="this.form.submit()"
                                         class="text-xs font-semibold rounded-xl border border-slate-300 bg-white px-2.5 py-1.5 text-slate-700 shadow-2xs focus:border-sky-500 focus:outline-hidden cursor-pointer">
-                                        <option value="ATTENDANCE" {{ $device->mode === 'ATTENDANCE' ? 'selected' : '' }}>Mode Absensi</option>
+                                        <option value="ATTENDANCE" {{ $device->mode === 'ATTENDANCE' ? 'selected' : '' }}>Mode Presensi</option>
                                         <option value="REGISTRATION" {{ $device->mode === 'REGISTRATION' ? 'selected' : '' }}>Mode Registrasi</option>
-                                        <option value="MAINTENANCE" {{ $device->mode === 'MAINTENANCE' ? 'selected' : '' }}>Mode Maintenance</option>
+                                        <option value="MAINTENANCE" {{ $device->mode === 'MAINTENANCE' ? 'selected' : '' }}>Mode Pemeliharaan</option>
                                     </select>
                                 </form>
                             </td>
@@ -280,22 +280,18 @@
             </table>
         </div>
 
-        @if($devices->hasPages())
-            <div class="p-4 border-t border-slate-100">
-                {{ $devices->links() }}
-            </div>
-        @endif
+        @include('partials.pagination', ['paginator' => $devices])
     </div>
 
     <!-- Integration Hint Panel -->
     <div class="bg-slate-900 text-slate-200 rounded-3xl p-6 border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs font-mono">
         <div>
-            <div class="text-sky-400 font-bold mb-1">Endpoints IoT Sync NodeMCU:</div>
+            <div class="text-sky-400 font-bold mb-1">Titik Akhir Sinkronisasi IoT NodeMCU:</div>
             <div>POST <span class="text-white bg-slate-800 px-2 py-0.5 rounded">{{ url('/devices/heartbeat') }}</span></div>
-            <div class="text-slate-400 text-[11px] mt-1">Payload JSON: { "device_uid": "ESP8266-LOBBY-01" }</div>
+            <div class="text-slate-400 text-[11px] mt-1">Muatan JSON: { "device_uid": "ESP8266-LOBBY-01" }</div>
         </div>
         <div class="text-slate-400 text-[11px] max-w-sm">
-            NodeMCU otomatis memperbarui timestamp last_ping dan mengambil status mode (ATTENDANCE / REGISTRATION / MAINTENANCE) dalam respon JSON.
+            NodeMCU otomatis memperbarui waktu sinyal terakhir dan mengambil status mode operasional dalam respons JSON.
         </div>
     </div>
 
@@ -313,13 +309,13 @@
             @csrf
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Nama Perangkat</label>
-                <input type="text" name="name" required placeholder="Contoh: NodeMCU Scanner Pintu Depan"
+                <input type="text" name="name" required placeholder="Contoh: Pemindai NodeMCU Pintu Depan"
                     class="w-full text-xs rounded-xl border border-slate-300 p-2.5 focus:border-sky-500 focus:outline-hidden">
             </div>
 
             <div class="grid grid-cols-2 gap-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Device UID / Chip ID</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">UID Perangkat / ID Cip</label>
                     <input type="text" name="device_uid" required placeholder="ESP8266-01"
                         class="w-full text-xs font-mono rounded-xl border border-slate-300 p-2.5 focus:border-sky-500 focus:outline-hidden">
                 </div>
@@ -333,11 +329,11 @@
             <div class="grid grid-cols-2 gap-3">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Lokasi Pemasangan</label>
-                    <input type="text" name="location" required placeholder="Lobby Gedung A"
+                    <input type="text" name="location" required placeholder="Lobi Gedung A"
                         class="w-full text-xs rounded-xl border border-slate-300 p-2.5 focus:border-sky-500 focus:outline-hidden">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Versi Firmware</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Versi Perangkat Lunak</label>
                     <input type="text" name="firmware_version" value="1.0.0"
                         class="w-full text-xs font-mono rounded-xl border border-slate-300 p-2.5 focus:border-sky-500 focus:outline-hidden">
                 </div>
@@ -345,7 +341,7 @@
 
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Catatan Tambahan</label>
-                <textarea name="notes" rows="2" placeholder="Catatan maintenance atau spesifikasi hardware..."
+                <textarea name="notes" rows="2" placeholder="Catatan pemeliharaan atau spesifikasi perangkat keras..."
                     class="w-full text-xs rounded-xl border border-slate-300 p-2.5 focus:border-sky-500 focus:outline-hidden"></textarea>
             </div>
 

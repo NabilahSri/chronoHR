@@ -1,0 +1,359 @@
+{
+  "info": {
+    "name": "ChronoHR Mobile Flutter REST API",
+    "description": "Koleksi lengkap 22 Endpoint REST API ChronoHR untuk Aplikasi Mobile Flutter (Karyawan, Magang, & Approver) serta Perangkat IoT NodeMCU RFID.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Autentikasi & Profil",
+      "item": [
+        {
+          "name": "POST /api/login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"karyawan1@chronohr.id\",\n  \"password\": \"password\",\n  \"device_name\": \"Flutter Android\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/login"
+          }
+        },
+        {
+          "name": "POST /api/logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/logout"
+          }
+        },
+        {
+          "name": "GET /api/profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/profile"
+          }
+        },
+        {
+          "name": "PUT /api/profile/password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"password\",\n  \"password\": \"passwordBaru123\",\n  \"password_confirmation\": \"passwordBaru123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/profile/password"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Presensi & Riwayat Kehadiran",
+      "item": [
+        {
+          "name": "GET /api/attendance/today",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/attendance/today"
+          }
+        },
+        {
+          "name": "POST /api/attendance/wfa (atau /wfh)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "latitude", "value": "-6.2088", "type": "text" },
+                { "key": "longitude", "value": "106.8456", "type": "text" },
+                { "key": "presence_type", "value": "WFA", "type": "text" }
+              ]
+            },
+            "url": "{{base_url}}/api/attendance/wfa"
+          }
+        },
+        {
+          "name": "POST /api/attendance/checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/attendance/checkout"
+          }
+        },
+        {
+          "name": "GET /api/attendance/history",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/attendance/history?month=11&year=2026"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Daily Report (Tugas Pagi & Sore)",
+      "item": [
+        {
+          "name": "GET /api/reports/today",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/reports/today"
+          }
+        },
+        {
+          "name": "POST /api/reports/morning",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"morning_planned_tasks\": [\n    \"Menyelesaikan integrasi UI Flutter\",\n    \"Pengujian endpoint presensi WFA\"\n  ]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/reports/morning"
+          }
+        },
+        {
+          "name": "POST /api/reports/evening",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"evening_completed_tasks\": [\"Menyelesaikan integrasi UI Flutter\", \"Pengujian endpoint presensi WFA\"],\n  \"evening_pending_tasks\": [],\n  \"evening_additional_tasks\": [\"Membantu perbaikan bug dokumentasi\"]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/reports/evening"
+          }
+        },
+        {
+          "name": "GET /api/reports/history",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/reports/history?month=11&year=2026"
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Perizinan & Dynamic Approval",
+      "item": [
+        {
+          "name": "GET /api/leaves",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/leaves"
+          }
+        },
+        {
+          "name": "POST /api/leaves",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "type", "value": "WFA", "type": "text" },
+                { "key": "start_date", "value": "2026-11-20", "type": "text" },
+                { "key": "end_date", "value": "2026-11-20", "type": "text" },
+                { "key": "reason", "value": "Koordinasi klien di luar kantor", "type": "text" }
+              ]
+            },
+            "url": "{{base_url}}/api/leaves"
+          }
+        },
+        {
+          "name": "GET /api/leaves/approvals",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/leaves/approvals"
+          }
+        },
+        {
+          "name": "POST /api/leaves/{id}/action",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"APPROVED\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/leaves/UUID_LEAVE_REQUEST/action"
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Finansial & Slip Gaji",
+      "item": [
+        {
+          "name": "GET /api/payrolls",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/payrolls"
+          }
+        },
+        {
+          "name": "GET /api/payrolls/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/payrolls/UUID_PAYROLL"
+          }
+        },
+        {
+          "name": "GET /api/payrolls/{id}/download",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/payrolls/UUID_PAYROLL/download"
+          }
+        },
+        {
+          "name": "GET /api/incentives",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/incentives"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Sanksi & Surat Peringatan (SP)",
+      "item": [
+        {
+          "name": "GET /api/sanctions",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/sanctions"
+          }
+        },
+        {
+          "name": "GET /api/sanctions/{id}",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/sanctions/UUID_SANCTION"
+          }
+        },
+        {
+          "name": "GET /api/sanctions/{id}/download",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": "{{base_url}}/api/sanctions/UUID_SANCTION/download"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Perangkat IoT NodeMCU RFID",
+      "item": [
+        {
+          "name": "POST /api/devices/rfid-tap",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"device_code\": \"NODEMCU-LOBBY-01\",\n  \"rfid_uid\": \"A1B2C3D4\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{base_url}}/api/devices/rfid-tap"
+          }
+        }
+      ]
+    }
+  ]
+}

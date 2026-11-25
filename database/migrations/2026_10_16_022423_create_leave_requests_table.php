@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->uuid('id')->primary();
             $table->foreignUuid('user_id')->constrained('users')->onDelete('cascade');
-            $table->enum('type', ['SAKIT', 'IZIN', 'WFH']);
+            $table->enum('type', ['SAKIT', 'IZIN', 'WFA']);
             $table->date('start_date');
             $table->date('end_date');
             $table->text('reason');

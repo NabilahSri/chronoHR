@@ -52,7 +52,7 @@ class PayrollServiceTest extends TestCase
         $this->assertEquals('DRAFT', $payroll['status']);
     }
 
-    public function test_calculate_employee_payroll_applies_wfh_deduction_and_overtime(): void
+    public function test_calculate_employee_payroll_applies_wfa_deduction_and_overtime(): void
     {
         $employee = User::create([
             'name' => 'Staff Test',
@@ -62,11 +62,11 @@ class PayrollServiceTest extends TestCase
             'basic_salary' => 4400000, // Daily rate = 4400000 / 22 = 200,000
         ]);
 
-        // 1 WFH day -> 30% deduction of daily rate = 60,000
+        // 1 WFA day -> 30% deduction of daily rate = 60,000
         Attendance::create([
             'user_id' => $employee->id,
             'date' => '2026-10-01',
-            'status' => 'WFH',
+            'status' => 'WFA',
             'method' => 'FORM',
             'is_late' => false,
             'overtime_hours' => 2, // 2 * 21000 = 42000
@@ -75,7 +75,7 @@ class PayrollServiceTest extends TestCase
         $payroll = $this->service->calculateForUser($employee, 10, 2026, 22);
 
         $this->assertEquals(200000, $payroll['daily_salary_rate']);
-        $this->assertEquals(60000, $payroll['wfh_deduction_amount']);
+        $this->assertEquals(60000, $payroll['wfa_deduction_amount']);
         $this->assertEquals(42000, $payroll['overtime_pay']);
         // Net: 4400000 - 60000 + 42000 = 4382000
         $this->assertEquals(4382000, $payroll['net_salary']);
@@ -100,10 +100,10 @@ class PayrollServiceTest extends TestCase
 
         $payroll = $this->service->calculateForUser($intern, 10, 2026, 22);
 
-        // Uang saku 500k + Proyek 1000k = 1500k, tanpa potongan WFH
+        // Uang saku 500k + Proyek 1000k = 1500k, tanpa potongan WFA
         $this->assertEquals(1500000, $payroll['net_salary']);
         $this->assertEquals(1500000, $payroll['gross_salary']);
-        $this->assertEquals(0, $payroll['wfh_deduction_amount']);
+        $this->assertEquals(0, $payroll['wfa_deduction_amount']);
         $this->assertEquals(1000000, $payroll['overtime_pay']);
     }
 

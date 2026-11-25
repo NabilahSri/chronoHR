@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Setting;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +21,16 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        View::composer('*', function ($view) {
+            $brand = Setting::getBrandSettings();
+
+            $view->with([
+                'appBrandName' => $brand['name'],
+                'appBrandSlogan' => $brand['slogan'],
+                'appBrandLogoPath' => $brand['logo_path'],
+                'appBrandLogoUrl' => $brand['logo_url'],
+                'appOfficeName' => $brand['office_name'],
+            ]);
+        });
     }
 }

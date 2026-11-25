@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Attendance;
+use App\Models\EmployeeSanction;
 use App\Models\Payroll;
 use App\Models\ProjectIncentive;
 use App\Models\Setting;
@@ -48,23 +49,34 @@ class PayrollService
             ->whereYear('given_date', $year)
             ->sum('amount');
 
-        // Uang saku  dari perusahaan (bisa Rp 0 atau nominal sukarela)
+        $activeSanctions = EmployeeSanction::where('user_id', $user->id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->where('status', 'ACTIVE')
+            ->get();
+
+        $sanctionDeduction = (float) $activeSanctions->sum('deduction_amount');
+
+        // Uang saku dari perusahaan (bisa Rp 0 atau nominal sukarela)
         $stipend = (float) ($user->basic_salary ?? 0);
-        $totalNet = $stipend + $totalIncentives;
+        $totalGross = $stipend + $totalIncentives;
+        $totalNet = max(0, $totalGross - $sanctionDeduction);
 
         return [
             'total_working_days' => $totalWorkingDays,
             'total_present_onsite' => 0,
-            'total_wfh_days' => 0,
+            'total_wfa_days' => 0,
             'total_sick_days' => 0,
             'total_permit_days' => 0,
             'total_overtime_hours' => 0,
+            'total_sanctions_count' => $activeSanctions->count(),
             'daily_salary_rate' => 0,
-            'wfh_deduction_amount' => 0,
+            'wfa_deduction_amount' => 0,
             'leave_deduction_amount' => 0,
+            'sanction_deduction_amount' => round($sanctionDeduction, 2),
             'overtime_pay' => $totalIncentives,
-            'gross_salary' => $totalNet,
-            'net_salary' => $totalNet,
+            'gross_salary' => $totalGross,
+            'net_salary' => round($totalNet, 2),
             'status' => 'DRAFT',
         ];
     }
@@ -77,7 +89,7 @@ class PayrollService
             ->get();
 
         $totalOnsite = $attendances->where('status', 'HADIR_ON_SITE')->count();
-        $totalWfh = $attendances->where('status', 'WFH')->count();
+        $totalWfa = $attendances->where('status', 'WFA')->count();
         $totalSick = $attendances->where('status', 'SAKIT')->count();
         $totalPermit = $attendances->where('status', 'IZIN')->count();
         $totalAlpha = $attendances->where('status', 'ALPHA')->count();
@@ -108,8 +120,8 @@ class PayrollService
                             $totalSick++;
                         } elseif ($leave->type === 'IZIN') {
                             $totalPermit++;
-                        } elseif ($leave->type === 'WFH') {
-                            $totalWfh++;
+                        } elseif ($leave->type === 'WFA') {
+                            $totalWfa++;
                         }
                     }
                 }
@@ -119,33 +131,48 @@ class PayrollService
         $basicSalary = (float) $user->basic_salary;
         $dailyRate = $totalWorkingDays > 0 ? ($basicSalary / $totalWorkingDays) : 0;
 
-        $kartapPct = (float) Setting::getValue('wfh_deduction_kartap_pct', 10) / 100;
-        $pkwtPct = (float) Setting::getValue('wfh_deduction_pkwt_pct', 30) / 100;
+        $kartapPct = (float) Setting::getValue('wfa_deduction_kartap_pct', 10) / 100;
+        $pkwtPct = (float) Setting::getValue('wfa_deduction_pkwt_pct', 30) / 100;
 
-        $wfhDeductionPct = ($user->employment_type === 'PKWT')
+        $wfaDeductionPct = ($user->employment_type === 'PKWT')
             ? $pkwtPct
             : $kartapPct;
 
-        $wfhDeduction = $totalWfh * ($dailyRate * $wfhDeductionPct);
+        $wfaDeduction = $totalWfa * ($dailyRate * $wfaDeductionPct);
 
         // Kebijakan: Sakit atau Izin full tidak dibayar hari itu (100% potongan tarif harian per hari sakit/izin)
         $unpaidLeaveDays = $totalSick + $totalPermit + $totalAlpha;
         $leaveDeduction = $unpaidLeaveDays * $dailyRate;
 
         $overtimePay = $totalOvertime * self::OVERTIME_RATE_PER_HOUR;
-        $netSalary = max(0, $basicSalary - $wfhDeduction - $leaveDeduction + $overtimePay);
-        $grossSalary = $basicSalary + $overtimePay;
+        $projectIncentives = (float) ProjectIncentive::where('user_id', $user->id)
+            ->whereMonth('given_date', $month)
+            ->whereYear('given_date', $year)
+            ->sum('amount');
+
+        $activeSanctions = EmployeeSanction::where('user_id', $user->id)
+            ->where('month', $month)
+            ->where('year', $year)
+            ->where('status', 'ACTIVE')
+            ->get();
+
+        $sanctionDeduction = (float) $activeSanctions->sum('deduction_amount');
+
+        $netSalary = max(0, $basicSalary - $wfaDeduction - $leaveDeduction - $sanctionDeduction + $overtimePay + $projectIncentives);
+        $grossSalary = $basicSalary + $overtimePay + $projectIncentives;
 
         return [
             'total_working_days' => $totalWorkingDays,
             'total_present_onsite' => $totalOnsite,
-            'total_wfh_days' => $totalWfh,
+            'total_wfa_days' => $totalWfa,
             'total_sick_days' => $totalSick,
             'total_permit_days' => $totalPermit,
             'total_overtime_hours' => $totalOvertime,
+            'total_sanctions_count' => $activeSanctions->count(),
             'daily_salary_rate' => round($dailyRate, 2),
-            'wfh_deduction_amount' => round($wfhDeduction, 2),
+            'wfa_deduction_amount' => round($wfaDeduction, 2),
             'leave_deduction_amount' => round($leaveDeduction, 2),
+            'sanction_deduction_amount' => round($sanctionDeduction, 2),
             'overtime_pay' => round($overtimePay, 2),
             'gross_salary' => round($grossSalary, 2),
             'net_salary' => round($netSalary, 2),

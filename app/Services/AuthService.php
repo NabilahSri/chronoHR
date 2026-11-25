@@ -15,14 +15,10 @@ class AuthService
             ]);
         }
         $user = Auth::user();
-        $hasWebAccess = $user->hasRole('super_admin')
-            || $user->hasRole('ceo')
-            || $user->hasRole('finance')
-            || $user->can_approve_leaves;
-        if (!$hasWebAccess) {
+        if (!$user || !$user->canAccessWebPortal()) {
             Auth::logout();
             throw ValidationException::withMessages([
-                'email' => 'Akses ditolak. akun Karyawan hanya dapat digunakan melalui Aplikasi Mobile.'
+                'email' => 'Akses ditolak. Akun Karyawan Regular dan Magang hanya dapat masuk melalui Aplikasi Mobile ChronoHR.'
             ]);
         }
         session()->regenerate();

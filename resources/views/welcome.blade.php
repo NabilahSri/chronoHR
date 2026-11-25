@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoHR — Precision Time, Effortless Payroll</title>
+    <title>ChronoHR - Presisi Waktu, Otomasi Penggajian</title>
 
     <!-- Favicon SVG -->
     <link rel="icon" type="image/svg+xml"
@@ -38,7 +38,7 @@
                 </div>
                 <div>
                     <span class="text-lg font-bold tracking-tight text-slate-900">Chrono<span class="text-sky-600">HR</span></span>
-                    <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100/70 text-sky-800 border border-sky-200/80 ml-1.5">Ecosystem</span>
+                    <span class="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-sky-100/70 text-sky-800 border border-sky-200/80 ml-1.5">Ekosistem</span>
                 </div>
             </div>
 
@@ -46,7 +46,7 @@
                 @auth
                     <a href="{{ route('admin.dashboard') }}"
                         class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition">
-                        Buka Dashboard
+                        Buka Dasbor
                     </a>
                 @else
                     <a href="{{ route('login') }}"
@@ -68,7 +68,7 @@
                 <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span>Generasi Baru HRMS & Otomasi Payroll Berbasis IoT</span>
+            <span>Sistem Manajemen SDM & Otomasi Penggajian Berbasis IoT</span>
         </div>
 
         <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight text-slate-900 leading-[1.15] max-w-3xl">
@@ -79,7 +79,7 @@
         </h1>
 
         <p class="mt-6 text-sm sm:text-base text-slate-600 max-w-2xl leading-relaxed">
-            Satu ekosistem terpadu yang menyatukan pencatatan presensi RFID secara presisi, transparansi perizinan karyawan, dan kalkulasi payroll instan bebas rekonsiliasi manual.
+            Satu ekosistem terpadu yang menyatukan pencatatan presensi RFID secara presisi, transparansi perizinan karyawan, dan kalkulasi penggajian instan bebas rekonsiliasi manual.
         </p>
 
         <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
@@ -100,8 +100,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                     </svg>
                 </div>
-                <h3 class="text-sm font-bold text-slate-900 mb-1">RFID Real-Time</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Sinkronisasi tap kartu instan melalui mikrokontroler NodeMCU ESP8266.</p>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">RFID Waktu Nyata</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Sinkronisasi pemindaian kartu instan melalui mikrokontroler NodeMCU ESP8266.</p>
             </div>
 
             <div class="p-6 rounded-3xl bg-white/95 border border-slate-200/90 shadow-2xs backdrop-blur-xs">
@@ -110,8 +110,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
                     </svg>
                 </div>
-                <h3 class="text-sm font-bold text-slate-900 mb-1">Payroll Otomatis</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Kalkulasi lembur, potongan WFH, dan insentif magang tergenerasi presisi.</p>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">Penggajian Otomatis</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Kalkulasi lembur, potongan WFA, dan insentif magang tergenerasi presisi.</p>
             </div>
 
             <div class="p-6 rounded-3xl bg-white/95 border border-slate-200/90 shadow-2xs backdrop-blur-xs">
@@ -120,8 +120,8 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <h3 class="text-sm font-bold text-slate-900 mb-1">Approval Cepat</h3>
-                <p class="text-xs text-slate-500 leading-relaxed">Alur verifikasi perizinan dan cuti terintegrasi langsung dengan absensi.</p>
+                <h3 class="text-sm font-bold text-slate-900 mb-1">Persetujuan Cepat</h3>
+                <p class="text-xs text-slate-500 leading-relaxed">Alur verifikasi perizinan dan cuti terintegrasi langsung dengan presensi.</p>
             </div>
         </div>
     </main>
@@ -134,9 +134,7 @@
                 <span>• © 2026 PT Chrono Presisi Indonesia</span>
             </div>
             <div class="flex items-center gap-4 text-[11px] text-slate-400">
-                <span>SSL 256-Bit Encrypted</span>
-                <span>•</span>
-                <span>ISO 27001 Security Standard</span>
+                <span>Sistem Presensi & Penggajian Terpadu</span>
             </div>
         </div>
     </footer>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Kelola Karyawan — ChronoHR ')
+@section('title', 'Kelola Karyawan - ChronoHR')
 @section('page_title', 'Kelola Karyawan & Hak Akses')
 
 @section('content')
@@ -28,7 +28,7 @@
                 </button>
                 @if ($search)
                     <a href="{{ route('admin.users.index') }}"
-                        class="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 font-semibold transition">Reset</a>
+                        class="px-3 py-2.5 text-xs text-slate-500 hover:text-slate-800 font-semibold transition">Atur Ulang</a>
                 @endif
             </form>
 
@@ -65,7 +65,7 @@
                             <th class="px-6 py-4">Status Ikatan Kerja</th>
                             <th class="px-6 py-4">UID Kartu RFID</th>
                             <th class="px-6 py-4">Gaji Pokok</th>
-                            <th class="px-6 py-4">Hak Approval</th>
+                            <th class="px-6 py-4">Hak Persetujuan</th>
                             <th class="px-6 py-4 text-right">Tindakan</th>
                         </tr>
                     </thead>
@@ -111,7 +111,7 @@
                                         <span
                                             class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold font-mono bg-sky-50 text-sky-700 border border-sky-200">
                                             <span class="w-1.5 h-1.5 rounded-full bg-sky-500"></span>
-                                            INTERN
+                                            MAGANG
                                         </span>
                                     @endif
                                 </td>
@@ -122,7 +122,7 @@
                                             {{ $user->rfid_uid }}
                                         </span>
                                     @else
-                                        <span class="text-slate-400 font-mono text-xs">— Belum Ada —</span>
+                                        <span class="text-slate-400 font-mono text-xs">- Belum Ada -</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 font-mono text-xs font-bold text-slate-900">
@@ -137,17 +137,17 @@
                                                     d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
                                                     clip-rule="evenodd" />
                                             </svg>
-                                            Approver
+                                            Penyetuju Izin
                                         </span>
                                     @else
-                                        <span class="text-slate-400 text-xs">—</span>
+                                        <span class="text-slate-400 text-xs">-</span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-right">
                                     <div class="inline-flex items-center gap-1.5">
                                         <a href="{{ route('admin.users.edit', $user) }}"
                                             class="p-2 rounded-xl text-slate-500 hover:text-sky-600 hover:bg-sky-50 border border-transparent hover:border-sky-200 transition"
-                                            title="Edit Karyawan">
+                                            title="Ubah Karyawan">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -192,11 +192,7 @@
                 </table>
             </div>
 
-            @if ($users->hasPages())
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                    {{ $users->links() }}
-                </div>
-            @endif
+            @include('partials.pagination', ['paginator' => $users])
         </div>
 
     </div>

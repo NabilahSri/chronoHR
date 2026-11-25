@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard Super Admin — ChronoHR')
-@section('page_title', 'Dashboard')
+@section('title', 'Dasbor Super Admin - ChronoHR')
+@section('page_title', 'Dasbor Utama')
 @section('page_subtitle', 'Selamat datang, ' . auth()->user()->name)
 
 @section('content')
@@ -34,7 +34,7 @@
                         PKWT</span>
                     <span
                         class="text-sky-700 font-bold bg-sky-50 px-2 py-0.5 rounded border border-sky-200">{{ $stats['intern'] }}
-                        Intern</span>
+                        Magang</span>
                 </div>
             </div>
 
@@ -60,12 +60,12 @@
                     @if ($stats['rfid_unassigned'] > 0)
                         <span
                             class="text-amber-700 font-semibold bg-amber-50 px-2.5 py-0.5 rounded-full border border-amber-200">
-                            {{ $stats['rfid_unassigned'] }} Belum Dipairing
+                            {{ $stats['rfid_unassigned'] }} Belum Ditautkan
                         </span>
                     @else
                         <span
                             class="text-emerald-700 font-semibold bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                            ✓ Semua Terpairing
+                            ✓ Semua Tertaut
                         </span>
                     @endif
                     <a href="{{ route('admin.users.index') }}" class="text-sky-600 font-semibold hover:underline">Kelola
@@ -87,12 +87,12 @@
                         </div>
                     </div>
                     <div class="text-3xl font-extrabold text-emerald-600 font-mono">
-                        {{ $stats['today_onsite'] + $stats['today_wfh'] }}
+                        {{ $stats['today_onsite'] + $stats['today_wfa'] }}
                     </div>
                 </div>
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs font-mono">
-                    <span class="text-slate-600">Onsite: <strong>{{ $stats['today_onsite'] }}</strong></span>
-                    <span class="text-sky-700">WFH: <strong>{{ $stats['today_wfh'] }}</strong></span>
+                    <span class="text-slate-600">Kantor: <strong>{{ $stats['today_onsite'] }}</strong></span>
+                    <span class="text-sky-700">WFA: <strong>{{ $stats['today_wfa'] }}</strong></span>
                     <span class="text-rose-600">Terlambat: <strong>{{ $stats['today_late'] }}</strong></span>
                 </div>
             </div>
@@ -115,9 +115,9 @@
                     </div>
                 </div>
                 <div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs">
-                    <span class="text-slate-500">Approver: <strong>{{ $stats['approvers_count'] }} User</strong></span>
+                    <span class="text-slate-500">Penyetuju: <strong>{{ $stats['approvers_count'] }} Akun</strong></span>
                     <a href="{{ route('admin.settings.index') }}"
-                        class="text-sky-600 font-semibold hover:underline">Setting &rarr;</a>
+                        class="text-sky-600 font-semibold hover:underline">Pengaturan &rarr;</a>
                 </div>
             </div>
 
@@ -161,13 +161,13 @@
                                 @else
                                     <span
                                         class="font-mono text-[11px] font-bold px-2 py-0.5 rounded bg-amber-50 text-amber-700 border border-amber-200">
-                                        No RFID
+                                        Tanpa RFID
                                     </span>
                                 @endif
 
                                 <a href="{{ route('admin.users.edit', $user) }}"
                                     class="p-1.5 rounded-lg text-slate-400 hover:text-sky-600 hover:bg-sky-50 transition"
-                                    title="Edit">
+                                    title="Ubah">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -186,8 +186,8 @@
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 tracking-tight">Log Presensi Hari Ini</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Aktivitas check-in/checkout terbaru via RFID NodeMCU atau
-                            Mobile.</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Aktivitas masuk/pulang terbaru melalui RFID NodeMCU atau
+                            Lokasi Seluler.</p>
                     </div>
                     <span
                         class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
@@ -200,10 +200,10 @@
                         <div
                             class="p-4 sm:px-6 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors">
                             <div class="min-w-0">
-                                <h4 class="font-bold text-slate-900 text-sm truncate">{{ $attendance->user->name ?? '—' }}
+                                <h4 class="font-bold text-slate-900 text-sm truncate">{{ $attendance->user->name ?? '-' }}
                                 </h4>
                                 <p class="text-xs text-slate-400 font-mono">
-                                    In: {{ $attendance->time_in ?: '—' }} | Out: {{ $attendance->time_out ?: '—' }}
+                                    Masuk: {{ $attendance->time_in ?: '-' }} | Pulang: {{ $attendance->time_out ?: '-' }}
                                 </p>
                             </div>
 
@@ -246,11 +246,11 @@
                 <div class="p-6 border-b border-slate-100 flex items-center justify-between">
                     <div>
                         <h3 class="text-base font-bold text-slate-900 tracking-tight">Status Perangkat IoT NodeMCU</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Monitoring ketersediaan hardware & mode operasional alat.
+                        <p class="text-xs text-slate-500 mt-0.5">Pemantauan ketersediaan perangkat keras & mode operasional alat.
                         </p>
                     </div>
                     <a href="{{ route('admin.devices.index') }}"
-                        class="text-xs font-semibold text-sky-600 hover:text-sky-700">Pusat Maintenance &rarr;</a>
+                        class="text-xs font-semibold text-sky-600 hover:text-sky-700">Pusat Pemeliharaan &rarr;</a>
                 </div>
 
                 <div class="divide-y divide-slate-100 font-sans">
@@ -272,23 +272,23 @@
                                 @if ($device->status === 'MAINTENANCE')
                                     <span
                                         class="px-2 py-0.5 rounded-full text-[11px] font-bold font-mono bg-amber-50 text-amber-700 border border-amber-200">
-                                        MAINTENANCE
+                                        PEMELIHARAAN
                                     </span>
                                 @elseif($device->isOnline())
                                     <span
                                         class="px-2 py-0.5 rounded-full text-[11px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        ONLINE
+                                        TERHUBUNG
                                     </span>
                                 @else
                                     <span
                                         class="px-2 py-0.5 rounded-full text-[11px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
-                                        OFFLINE
+                                        TERPUTUS
                                     </span>
                                 @endif
 
                                 <span
                                     class="font-mono text-[10px] font-bold px-2 py-0.5 rounded border {{ $device->mode === 'REGISTRATION' ? 'bg-amber-50 text-amber-700 border-amber-200' : 'bg-sky-50 text-sky-700 border-sky-200' }}">
-                                    {{ $device->mode }}
+                                    {{ $device->mode === 'REGISTRATION' ? 'REGISTRASI' : ($device->mode === 'MAINTENANCE' ? 'PEMELIHARAAN' : 'PRESENSI') }}
                                 </span>
                             </div>
                         </div>
@@ -308,7 +308,7 @@
                     </div>
                     <a href="{{ route('approval.index') }}"
                         class="text-xs font-semibold text-sky-600 hover:text-sky-700">Lihat Semua
-                        ({{ $stats['pending_leaves_count'] }} Pending) &rarr;</a>
+                        ({{ $stats['pending_leaves_count'] }} Menunggu) &rarr;</a>
                 </div>
 
                 <div class="divide-y divide-slate-100 font-sans">
@@ -316,7 +316,7 @@
                         <div
                             class="p-4 sm:px-6 flex items-center justify-between gap-4 hover:bg-slate-50/70 transition-colors">
                             <div class="space-y-1 min-w-0">
-                                <h4 class="font-bold text-slate-900 text-sm truncate">{{ $leave->user->name ?? '—' }}</h4>
+                                <h4 class="font-bold text-slate-900 text-sm truncate">{{ $leave->user->name ?? '-' }}</h4>
                                 <p class="text-xs text-slate-400 font-mono truncate">
                                     {{ $leave->type }}: {{ $leave->start_date }} s/d {{ $leave->end_date }}
                                 </p>
@@ -329,19 +329,19 @@
                                 @if ($leave->status === 'PENDING')
                                     <span
                                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-amber-50 text-amber-700 border border-amber-200">
-                                        PENDING
+                                        MENUNGGU
                                     </span>
                                     <a href="{{ route('approval.index') }}"
-                                        class="text-xs font-bold text-sky-600 hover:underline">Review</a>
+                                        class="text-xs font-bold text-sky-600 hover:underline">Tinjau</a>
                                 @elseif($leave->status === 'APPROVED')
                                     <span
                                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                        APPROVED
+                                        DISETUJUI
                                     </span>
                                 @else
                                     <span
                                         class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono bg-rose-50 text-rose-700 border border-rose-200">
-                                        REJECTED
+                                        DITOLAK
                                     </span>
                                 @endif
                             </div>

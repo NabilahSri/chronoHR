@@ -1,9 +1,9 @@
 @extends('layouts.app')
 
-@section('title', 'Monitoring Task Harian — ChronoHR')
-@section('page_title', 'Monitoring Laporan Task Harian')
+@section('title', 'Pemantauan Tugas Harian - ChronoHR')
+@section('page_title', 'Pemantauan Laporan Tugas Harian')
 @section('page_subtitle',
-    'Pantau rencana kerja pagi (Check-In Plan) dan evaluasi capaian sore (Check-Out Review)
+    'Pantau rencana kerja pagi (Saat Masuk) dan evaluasi capaian sore (Saat Pulang)
     seluruh personil.')
 
 @section('content')
@@ -22,7 +22,7 @@
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600">Rencana Pagi Masuk</span>
                 <div class="text-2xl font-extrabold text-sky-600 font-mono mt-2">{{ $stats['morning_submitted'] }}</div>
-                <span class="text-[10px] text-slate-500 mt-1">Submit to-do kerja pagi</span>
+                <span class="text-[10px] text-slate-500 mt-1">Mengirim rencana kerja pagi</span>
             </div>
 
             <!-- Laporan Lengkap (Pagi + Sore) -->
@@ -36,102 +36,88 @@
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-amber-600">Menunggu Sore</span>
                 <div class="text-2xl font-extrabold text-amber-600 font-mono mt-2">{{ $stats['morning_only'] }}</div>
-                <span class="text-[10px] text-slate-500 mt-1">Pending update jam pulang</span>
+                <span class="text-[10px] text-slate-500 mt-1">Menunggu pembaruan jam pulang</span>
             </div>
 
             <!-- Belum Lapor Sama Sekali -->
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Belum Lapor Task</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Belum Lapor Tugas</span>
                 <div class="text-2xl font-extrabold text-rose-600 font-mono mt-2">{{ $stats['not_submitted'] }}</div>
                 <span class="text-[10px] text-slate-500 mt-1">Perlu diingatkan atasan</span>
             </div>
         </div>
 
-        <!-- Filter Bar Card (Hidden when printing) -->
-        <div
-            class="bg-white/95 rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs backdrop-blur-xs w-full print:hidden">
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+        <!-- Kartu Filter Pemantauan Tugas Harian -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs w-full print:hidden">
+            <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
                 <div class="flex items-center gap-2.5">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xs">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900">Parameter Pemantauan Task Harian</h3>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Parameter Pemantauan Tugas Harian</h3>
+                        <p class="text-xs text-slate-600">Pilih tanggal laporan, status kelengkapan, personil, atau kata kunci untuk menyaring daftar tugas.</p>
+                    </div>
                 </div>
                 @if (request()->hasAny(['date', 'status', 'user_id', 'search']))
                     <a href="{{ route('reports.daily-tasks') }}"
-                        class="text-xs text-sky-600 hover:text-sky-700 font-semibold transition">
-                        Reset Filter
+                        class="text-xs text-sky-700 hover:text-sky-900 font-bold underline transition">
+                        Atur Ulang Filter
                     </a>
                 @endif
             </div>
 
-            <form method="GET" action="{{ route('reports.daily-tasks') }}" class="w-full space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <form method="GET" action="{{ route('reports.daily-tasks') }}" class="w-full">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                     <!-- Tanggal Laporan -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tanggal
-                            Laporan</label>
-                        <input type="date" name="date" value="{{ $date }}"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
+                        <label for="rep_task_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Tanggal Laporan
+                        </label>
+                        <input type="date" id="rep_task_date" name="date" value="{{ $date }}"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
                     </div>
 
-                    <!-- Status Laporan -->
+                    <!-- Filter Personil Karyawan (Searchable Dropdown) -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status
-                            Laporan</label>
-                        <select name="status"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua Status —</option>
-                            <option value="COMPLETED" {{ $statusFilter === 'COMPLETED' ? 'selected' : '' }}>Lengkap (Pagi &
-                                Sore)</option>
-                            <option value="MORNING_ONLY" {{ $statusFilter === 'MORNING_ONLY' ? 'selected' : '' }}>Hanya Pagi
-                                (Menunggu Sore)</option>
-                            <option value="NOT_SUBMITTED" {{ $statusFilter === 'NOT_SUBMITTED' ? 'selected' : '' }}>Belum
-                                Lapor Task</option>
-                        </select>
-                    </div>
-
-                    <!-- Filter Personil Karyawan -->
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Personil
-                            Karyawan</label>
-                        <select name="user_id"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua Personil —</option>
+                        <label for="rep_task_user_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Personil Karyawan
+                        </label>
+                        <select id="rep_task_user_id" name="user_id"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Personil</option>
                             @foreach ($allEmployees as $emp)
                                 <option value="{{ $emp->id }}" {{ $userId == $emp->id ? 'selected' : '' }}>
-                                    {{ $emp->name }} ({{ $emp->employment_type }})
+                                    {{ $emp->name }} ({{ $emp->employment_type === 'INTERN' ? 'MAGANG' : $emp->employment_type }})
                                 </option>
                             @endforeach
                         </select>
                     </div>
 
-                    <!-- Cari Nama / Email -->
+                    <!-- Status Laporan -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Cari Kata
-                            Kunci</label>
-                        <div class="relative">
-                            <input type="text" name="search" value="{{ $search }}"
-                                placeholder="Nama / email karyawan..."
-                                class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <svg class="w-4 h-4 text-slate-400 absolute left-3 top-3" fill="none" stroke="currentColor"
-                                viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
+                        <label for="rep_task_status" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Status Laporan
+                        </label>
+                        <select id="rep_task_status" name="status"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Status</option>
+                            <option value="COMPLETED" {{ $statusFilter === 'COMPLETED' ? 'selected' : '' }}>Lengkap (Pagi & Sore)</option>
+                            <option value="MORNING_ONLY" {{ $statusFilter === 'MORNING_ONLY' ? 'selected' : '' }}>Hanya Pagi (Menunggu Sore)</option>
+                            <option value="NOT_SUBMITTED" {{ $statusFilter === 'NOT_SUBMITTED' ? 'selected' : '' }}>Belum Lapor Tugas</option>
+                        </select>
                     </div>
-                </div>
 
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <button type="submit"
-                        class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow transition cursor-pointer">
-                        Terapkan Filter
-                    </button>
+                    <!-- Tombol Terapkan -->
+                    <div>
+                        <button type="submit"
+                            class="w-full h-[42px] px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-sky-600">
+                            Terapkan Filter
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -140,11 +126,11 @@
         <div class="bg-white/95 rounded-3xl border border-slate-200/90 shadow-xs overflow-hidden backdrop-blur-xs w-full">
             <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                    <h2 class="text-base font-bold text-slate-900 tracking-tight">Status & Log Task Kerja Karyawan</h2>
+                    <h2 class="text-base font-bold text-slate-900 tracking-tight">Status & Log Tugas Kerja Karyawan</h2>
                     <p class="text-xs text-slate-500 mt-0.5">
                         Pemantauan Tanggal: <strong
                             class="text-slate-800 font-semibold">{{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}</strong>
-                        · Sistem 2 Laporan: Rencana Masuk (Pagi) & Evaluasi Progres (Sore)
+                        · Sistem 2 Laporan: Rencana Masuk (Pagi) & Evaluasi Capaian (Sore)
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2.5">
@@ -154,7 +140,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span>Export ke Excel</span>
+                        <span>Ekspor ke Excel</span>
                     </a>
 
                     <span
@@ -171,8 +157,8 @@
                         <tr>
                             <th class="px-6 py-4">Karyawan</th>
                             <th class="px-6 py-4 text-center">Status Laporan</th>
-                            <th class="px-6 py-4" style="min-width: 260px;">Report Pagi (Rencana Task)</th>
-                            <th class="px-6 py-4" style="min-width: 280px;">Report Sore (Evaluasi Pulang)</th>
+                            <th class="px-6 py-4" style="min-width: 260px;">Laporan Pagi (Rencana Tugas)</th>
+                            <th class="px-6 py-4" style="min-width: 280px;">Laporan Sore (Evaluasi Pulang)</th>
                             <th class="px-6 py-4 text-right">Aksi</th>
                         </tr>
                     </thead>
@@ -194,7 +180,7 @@
                                             <div class="text-[11px] text-slate-400 font-mono">{{ $u->email }}</div>
                                             <span
                                                 class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[9px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
-                                                {{ $u->employment_type ?? 'STAFF' }}
+                                                {{ ($u->employment_type ?? '') === 'INTERN' ? 'MAGANG' : ($u->employment_type ?? 'STAF') }}
                                             </span>
                                         </div>
                                     </div>
@@ -228,14 +214,14 @@
                                     @endif
                                 </td>
 
-                                <!-- Report Pagi (Check-in Work Plan) -->
+                                <!-- Laporan Pagi -->
                                 <td class="px-6 py-4 text-xs">
                                     @if ($report)
                                         <div class="space-y-1">
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                                                    Submit: {{ substr($report->morning_submitted_at ?? '08:00', 0, 5) }}
+                                                    Dikirim: {{ substr($report->morning_submitted_at ?? '08:00', 0, 5) }}
                                                     WIB
                                                 </span>
                                             </div>
@@ -244,19 +230,18 @@
                                             </div>
                                         </div>
                                     @else
-                                        <span class="text-slate-400 italic text-[11px]">— Belum ada rencana task pagi
-                                            —</span>
+                                        <span class="text-slate-400 italic text-[11px]">- Belum ada rencana tugas pagi -</span>
                                     @endif
                                 </td>
 
-                                <!-- Report Sore (Check-out Review) -->
+                                <!-- Laporan Sore -->
                                 <td class="px-6 py-4 text-xs">
                                     @if ($report && $report->status === 'COMPLETED')
                                         <div class="space-y-1.5">
                                             <div class="flex items-center gap-2">
                                                 <span
                                                     class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                                    Submit: {{ substr($report->evening_submitted_at ?? '17:00', 0, 5) }}
+                                                    Dikirim: {{ substr($report->evening_submitted_at ?? '17:00', 0, 5) }}
                                                     WIB
                                                 </span>
                                             </div>
@@ -271,10 +256,10 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                     d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                             </svg>
-                                            <span>Menunggu update mendekati jam pulang</span>
+                                            <span>Menunggu pembaruan mendekati jam pulang</span>
                                         </div>
                                     @else
-                                        <span class="text-slate-400 italic text-[11px]">—</span>
+                                        <span class="text-slate-400 italic text-[11px]">-</span>
                                     @endif
                                 </td>
 
@@ -287,49 +272,55 @@
                                                 onclick="openDetailModal({{ json_encode([
                                                     'name' => $u->name,
                                                     'email' => $u->email,
-                                                    'role' => $u->employment_type ?? 'STAFF',
+                                                    'role' => ($u->employment_type ?? '') === 'INTERN' ? 'MAGANG' : ($u->employment_type ?? 'STAF'),
                                                     'date' => \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y'),
                                                     'status' => $report->status,
                                                     'morning_time' => $report->morning_submitted_at ? substr($report->morning_submitted_at, 0, 5) . ' WIB' : '-',
                                                     'morning_tasks' => $report->morning_planned_tasks,
                                                     'evening_time' => $report->evening_submitted_at
                                                         ? substr($report->evening_submitted_at, 0, 5) . ' WIB'
-                                                        : 'Belum Submit',
+                                                        : 'Belum Dikirim',
                                                     'completed_tasks' => $report->evening_completed_tasks ?? 'Belum ada data',
-                                                    'pending_tasks' => $report->evening_pending_tasks ?? 'Tidak ada kendala / pending',
-                                                    'additional_tasks' => $report->evening_additional_tasks ?? 'Tidak ada task tambahan',
+                                                    'pending_tasks' => $report->evening_pending_tasks ?? 'Tidak ada kendala / tertunda',
+                                                    'additional_tasks' => $report->evening_additional_tasks ?? 'Tidak ada tugas tambahan',
                                                 ]) }})"
                                                 class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-semibold transition cursor-pointer">
-                                                Lihat Log Task
+                                                Lihat Log Tugas
                                             </button>
 
-                                            <!-- Tombol Update Sore Berbasis Checklist -->
-                                            @if ($report->status === 'MORNING_ONLY')
-                                                <button type="button"
-                                                    onclick="openUpdateEveningModal('{{ route('reports.daily-tasks.update', $report->id) }}', '{{ $u->name }}', {{ json_encode($report->morning_planned_tasks) }}, {{ json_encode($report->evening_additional_tasks ?? '') }}, {{ json_encode($report->evening_completed_tasks ?? '') }})"
-                                                    class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-2xs transition cursor-pointer flex items-center gap-1.5">
-                                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
-                                                        viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round"
-                                                            stroke-width="2"
-                                                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
-                                                    </svg>
-                                                    <span>Checklist Sore</span>
-                                                </button>
-                                            @else
-                                                <button type="button"
-                                                    onclick="openUpdateEveningModal('{{ route('reports.daily-tasks.update', $report->id) }}', '{{ $u->name }}', {{ json_encode($report->morning_planned_tasks) }}, {{ json_encode($report->evening_additional_tasks ?? '') }}, {{ json_encode($report->evening_completed_tasks ?? '') }})"
-                                                    class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition cursor-pointer"
-                                                    title="Ubah Checklist Sore">
-                                                    Edit
-                                                </button>
+                                            @if (!auth()->user()->hasRole('ceo') || auth()->user()->hasRole('super_admin'))
+                                                <!-- Tombol Update Sore Berbasis Daftar Periksa -->
+                                                @if ($report->status === 'MORNING_ONLY')
+                                                    <button type="button"
+                                                        onclick="openUpdateEveningModal('{{ route('reports.daily-tasks.update', $report->id) }}', '{{ $u->name }}', {{ json_encode($report->morning_planned_tasks) }}, {{ json_encode($report->evening_additional_tasks ?? '') }}, {{ json_encode($report->evening_completed_tasks ?? '') }})"
+                                                        class="px-3 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold shadow-2xs transition cursor-pointer flex items-center gap-1.5">
+                                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                            viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                stroke-width="2"
+                                                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                                                        </svg>
+                                                        <span>Evaluasi Sore</span>
+                                                    </button>
+                                                @else
+                                                    <button type="button"
+                                                        onclick="openUpdateEveningModal('{{ route('reports.daily-tasks.update', $report->id) }}', '{{ $u->name }}', {{ json_encode($report->morning_planned_tasks) }}, {{ json_encode($report->evening_additional_tasks ?? '') }}, {{ json_encode($report->evening_completed_tasks ?? '') }})"
+                                                        class="px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-medium transition cursor-pointer"
+                                                        title="Ubah Evaluasi Sore">
+                                                        Ubah
+                                                    </button>
+                                                @endif
                                             @endif
                                         @else
-                                            <button type="button"
-                                                onclick="openCreateModalForUser('{{ $u->id }}', '{{ $u->name }}', '{{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}')"
-                                                class="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 text-xs font-semibold transition cursor-pointer">
-                                                Isi Laporan
-                                            </button>
+                                            @if (!auth()->user()->hasRole('ceo') || auth()->user()->hasRole('super_admin'))
+                                                <button type="button"
+                                                    onclick="openCreateModalForUser('{{ $u->id }}', '{{ $u->name }}', '{{ \Carbon\Carbon::parse($date)->translatedFormat('l, d F Y') }}')"
+                                                    class="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 hover:bg-sky-100 border border-sky-200 text-xs font-semibold transition cursor-pointer">
+                                                    Isi Laporan
+                                                </button>
+                                            @else
+                                                <span class="text-xs text-slate-400 italic">Belum Lapor</span>
+                                            @endif
                                         @endif
                                     </div>
                                 </td>
@@ -345,11 +336,7 @@
                 </table>
             </div>
 
-            @if ($users->hasPages())
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                    {{ $users->links() }}
-                </div>
-            @endif
+            @include('partials.pagination', ['paginator' => $users])
         </div>
 
     </div>
@@ -388,11 +375,11 @@
 
             <!-- Modal Content: 2 Sisi (Pagi vs Sore) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <!-- Kolom Kiri: Laporan Pagi (Check-in Work Plan) -->
+                <!-- Kolom Kiri: Laporan Pagi -->
                 <div class="p-5 rounded-2xl bg-sky-50/40 border border-sky-100 space-y-3">
                     <div class="flex items-center justify-between pb-2 border-b border-sky-100/80">
                         <span class="text-xs font-bold text-sky-900 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>Report Pagi (Rencana Masuk)</span>
+                            <span>Laporan Pagi (Rencana Masuk)</span>
                         </span>
                         <span id="modal-morning-time"
                             class="font-mono text-[10px] font-bold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-md">
@@ -400,7 +387,7 @@
                         </span>
                     </div>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Daftar Task
+                        <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Daftar Tugas
                             yang Direncanakan:</label>
                         <div id="modal-morning-tasks"
                             class="text-xs text-slate-700 whitespace-pre-line leading-relaxed font-sans bg-white p-3.5 rounded-xl border border-sky-100/80">
@@ -409,11 +396,11 @@
                     </div>
                 </div>
 
-                <!-- Kolom Kanan: Laporan Sore (Check-out Review) -->
+                <!-- Kolom Kanan: Laporan Sore -->
                 <div class="p-5 rounded-2xl bg-slate-50/70 border border-slate-200/90 space-y-4">
                     <div class="flex items-center justify-between pb-2 border-b border-slate-200/80">
                         <span class="text-xs font-bold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>Report Sore (Update Pulang)</span>
+                            <span>Laporan Sore (Evaluasi Pulang)</span>
                         </span>
                         <span id="modal-evening-time"
                             class="font-mono text-[10px] font-bold text-slate-700 bg-slate-200 px-2 py-0.5 rounded-md">
@@ -421,9 +408,9 @@
                         </span>
                     </div>
 
-                    <!-- Task Selesai -->
+                    <!-- Tugas Selesai -->
                     <div>
-                        <label class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">✓ Task
+                        <label class="block text-[10px] font-bold text-emerald-700 uppercase tracking-wider mb-1">✓ Tugas
                             yang Sudah Selesai:</label>
                         <div id="modal-completed-tasks"
                             class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-emerald-100">
@@ -431,19 +418,19 @@
                         </div>
                     </div>
 
-                    <!-- Task Belum Selesai (Pending) -->
+                    <!-- Tugas Belum Selesai -->
                     <div>
-                        <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1"> Task
-                            Belum Selesai / Pending:</label>
+                        <label class="block text-[10px] font-bold text-amber-700 uppercase tracking-wider mb-1">Tugas
+                            Belum Selesai / Tertunda:</label>
                         <div id="modal-pending-tasks"
                             class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-amber-100">
                             -
                         </div>
                     </div>
 
-                    <!-- Task Tambahan -->
+                    <!-- Tugas Tambahan -->
                     <div>
-                        <label class="block text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1">+ Task
+                        <label class="block text-[10px] font-bold text-sky-700 uppercase tracking-wider mb-1">+ Tugas
                             Tambahan Hari Ini:</label>
                         <div id="modal-additional-tasks"
                             class="text-xs text-slate-700 whitespace-pre-line leading-relaxed bg-white p-3 rounded-xl border border-sky-100">
@@ -479,7 +466,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Isi Laporan Task Kerja</h3>
+                        <h3 class="text-base font-bold text-slate-900">Isi Laporan Tugas Kerja</h3>
                         <p class="text-xs text-slate-500">
                             Karyawan: <strong id="create-user-name" class="text-slate-800">-</strong>
                             · Tanggal: <strong id="create-date-display" class="text-slate-800 font-mono">{{ \Carbon\Carbon::parse($date)->translatedFormat('d M Y') }}</strong>
@@ -501,27 +488,27 @@
                 <input type="hidden" name="date" id="create-date" value="{{ $date }}">
                 <input type="hidden" name="with_evening_checklist" id="create-with-evening" value="0">
 
-                <!-- BAGIAN 1: RENCANA TASK PAGI (WAJIB) -->
+                <!-- BAGIAN 1: RENCANA TUGAS PAGI (WAJIB) -->
                 <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                         <label for="create-morning-tasks"
                             class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
-                            📋 1. Rencana Task Pagi (Check-In) <span class="text-rose-500">*</span>
+                            📋 1. Rencana Tugas Pagi (Presensi Masuk) <span class="text-rose-500">*</span>
                         </label>
                         <span class="text-[10px] font-semibold text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full border border-sky-200">
-                            Wajib Disubmit
+                            Wajib Dikirim
                         </span>
                     </div>
                     <p class="text-[11px] text-slate-500">
-                        Ketik daftar task yang direncanakan untuk dikerjakan (pisahkan per baris):
+                        Ketik daftar tugas yang direncanakan untuk dikerjakan (pisahkan per baris):
                     </p>
                     <textarea name="morning_planned_tasks" id="create-morning-tasks" rows="3" required
-                        placeholder="Contoh:&#10;1. Selesaikan bug report login RFID&#10;2. Pengujian modul slip gaji&#10;3. Koordinasi dengan tim finance"
+                        placeholder="Contoh:&#10;1. Selesaikan perbaikan kendala masuk RFID&#10;2. Pengujian modul slip gaji&#10;3. Koordinasi dengan tim keuangan"
                         oninput="syncMorningTasksToCreateChecklist()"
                         class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition leading-relaxed"></textarea>
                 </div>
 
-                <!-- BAGIAN 2: CHECKLIST SORE (OPSIONAL JIKA INGIN LANGSUNG DILENGKAPI) -->
+                <!-- BAGIAN 2: DAFTAR PERIKSA SORE (OPSIONAL JIKA INGIN LANGSUNG DILENGKAPI) -->
                 <div class="pt-3 border-t border-slate-100 space-y-3">
                     <div class="flex items-center justify-between p-3.5 bg-slate-50 rounded-2xl border border-slate-200 cursor-pointer hover:bg-slate-100/70 transition"
                         onclick="toggleCreateEveningSection()">
@@ -531,25 +518,25 @@
                             </div>
                             <div>
                                 <span class="text-xs font-bold text-slate-900 block">Langsung Lengkapi Evaluasi Sore Sekarang?</span>
-                                <span class="text-[11px] text-slate-500">Centang task yang selesai sore ini jika ingin laporan langsung tuntas</span>
+                                <span class="text-[11px] text-slate-500">Centang tugas yang selesai sore ini jika ingin laporan langsung tuntas</span>
                             </div>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xs font-bold text-slate-600" id="create-evening-toggle-label">Buka Checklist</span>
+                            <span class="text-xs font-bold text-slate-600" id="create-evening-toggle-label">Buka Daftar Periksa</span>
                             <div id="create-evening-badge" class="w-5 h-5 rounded-md border border-slate-300 bg-white flex items-center justify-center text-emerald-600 text-xs font-bold">
                                 
                             </div>
                         </div>
                     </div>
 
-                    <!-- Container Checklist Sore -->
+                    <!-- Container Daftar Periksa Sore -->
                     <div id="create-evening-container" class="hidden space-y-4 pt-1 animate-in fade-in duration-200">
-                        <!-- Input Task Tambahan Terlebih Dahulu -->
+                        <!-- Input Tugas Tambahan Terlebih Dahulu -->
                         <div class="p-4 bg-sky-50/60 rounded-2xl border border-sky-100 space-y-2">
                             <div class="flex items-center justify-between">
                                 <label for="create-evening-additional-tasks"
                                     class="block text-xs font-bold text-sky-950 uppercase tracking-wider flex items-center gap-1.5">
-                                    <span>➕ Task Tambahan Hari Ini (Ketik Tambahan Dulu)</span>
+                                    <span>➕ Tugas Tambahan Hari Ini (Ketik Tambahan Dulu)</span>
                                 </label>
                                 <span class="text-[10px] font-semibold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">Opsional</span>
                             </div>
@@ -557,30 +544,30 @@
                                 Jika ada tugas baru atau dadakan di luar rencana pagi tadi, ketik di bawah ini terlebih dahulu:
                             </p>
                             <textarea id="create-evening-additional-tasks" name="evening_additional_tasks" rows="2"
-                                placeholder="Contoh:&#10;- Perbaikan bug urgent di server&#10;- Koordinasi dadakan dengan tim finance"
+                                placeholder="Contoh:&#10;- Perbaikan kendala mendesak di peladen&#10;- Koordinasi dadakan dengan tim keuangan"
                                 class="w-full px-3.5 py-2.5 bg-white border border-sky-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition leading-relaxed"></textarea>
 
                             <div class="flex items-center justify-between pt-1">
-                                <span class="text-[10px] text-slate-400">Ingin memasukkan task tambahan ke checklist di bawah?</span>
+                                <span class="text-[10px] text-slate-400">Ingin memasukkan tugas tambahan ke daftar periksa di bawah?</span>
                                 <button type="button" onclick="syncCreateAdditionalTasksToChecklist()"
                                     class="px-2.5 py-1 bg-white hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-lg text-[11px] font-semibold transition cursor-pointer flex items-center gap-1 shadow-2xs">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                     </svg>
-                                    <span>+ Masukkan ke Checklist</span>
+                                    <span>+ Masukkan ke Daftar Periksa</span>
                                 </button>
                             </div>
                         </div>
 
-                        <!-- Checklist Task Selesai -->
+                        <!-- Daftar Periksa Tugas Selesai -->
                         <div class="space-y-3">
                             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
                                 <div>
                                     <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                        ☑️ Checklist Task yang Sudah Selesai
+                                        ☑️ Daftar Periksa Tugas yang Sudah Selesai
                                     </label>
                                     <p class="text-[11px] text-slate-500">
-                                        Centang task yang <strong>sudah selesai</strong>. Task yang <strong>tidak dicentang</strong> otomatis tercatat sebagai <em>Belum Selesai (Pending)</em>.
+                                        Centang tugas yang <strong>sudah selesai</strong>. Tugas yang <strong>tidak dicentang</strong> otomatis tercatat sebagai <em>Belum Selesai (Tertunda)</em>.
                                     </p>
                                 </div>
 
@@ -602,10 +589,10 @@
                                 <div class="flex items-center justify-between text-xs">
                                     <span class="font-bold text-slate-700 flex items-center gap-1.5">
                                         <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                        <span id="create-checklist-counter">0 dari 0 task selesai (0%)</span>
+                                        <span id="create-checklist-counter">0 dari 0 tugas selesai (0%)</span>
                                     </span>
                                     <span id="create-checklist-pending-counter" class="text-[11px] font-medium text-amber-700">
-                                        0 pending
+                                        0 tertunda
                                     </span>
                                 </div>
                                 <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
@@ -619,7 +606,7 @@
                             </div>
 
                             <div id="create-empty-tasks-alert" class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                                Ketik task rencana pagi terlebih dahulu pada kolom di atas agar muncul di daftar checklist ini.
+                                Ketik tugas rencana pagi terlebih dahulu pada kolom di atas agar muncul di daftar periksa ini.
                             </div>
                         </div>
                     </div>
@@ -636,14 +623,14 @@
                         <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                         </svg>
-                        <span id="create-submit-button-text">Simpan Laporan Task</span>
+                        <span id="create-submit-button-text">Simpan Laporan Tugas</span>
                     </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 3: UPDATE SORE (CHECK-OUT REVIEW BERBASIS CHECKLIST) -->
+    <!-- MODAL 3: PERBARUI SORE (TINJAUAN PULANG BERBASIS DAFTAR PERIKSA) -->
     <div id="update-evening-modal"
         class="fixed inset-0 z-50 hidden overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
         <div
@@ -659,7 +646,7 @@
                         </svg>
                     </div>
                     <div>
-                        <h3 class="text-base font-bold text-slate-900">Checklist Evaluasi Sore (Jam Pulang)</h3>
+                        <h3 class="text-base font-bold text-slate-900">Daftar Periksa Evaluasi Sore (Jam Pulang)</h3>
                         <p class="text-xs text-slate-500">Karyawan: <strong id="update-user-name"
                                 class="text-slate-800">-</strong></p>
                     </div>
@@ -676,12 +663,12 @@
                 @csrf
                 @method('PUT')
 
-                <!-- BAGIAN 1: INPUT TASK TAMBAHAN TERLEBIH DAHULU -->
+                <!-- BAGIAN 1: INPUT TUGAS TAMBAHAN TERLEBIH DAHULU -->
                 <div class="p-4 bg-sky-50/60 rounded-2xl border border-sky-100 space-y-2">
                     <div class="flex items-center justify-between">
                         <label for="update-evening-additional-tasks"
                             class="block text-xs font-bold text-sky-950 uppercase tracking-wider flex items-center gap-1.5">
-                            <span>➕ 1. Task Tambahan Hari Ini (Ketik Tambahan Dulu)</span>
+                            <span>➕ 1. Tugas Tambahan Hari Ini (Ketik Tambahan Dulu)</span>
                         </label>
                         <span
                             class="text-[10px] font-semibold text-sky-700 bg-sky-100 px-2 py-0.5 rounded-full">Opsional</span>
@@ -690,11 +677,11 @@
                         Jika ada tugas dadakan di luar rencana pagi tadi, ketik di bawah ini terlebih dahulu:
                     </p>
                     <textarea id="update-evening-additional-tasks" name="evening_additional_tasks" rows="2"
-                        placeholder="Contoh:&#10;- Perbaikan bug urgent di server&#10;- Koordinasi dadakan dengan tim finance"
+                        placeholder="Contoh:&#10;- Perbaikan kendala mendesak di peladen&#10;- Koordinasi dadakan dengan tim keuangan"
                         class="w-full px-3.5 py-2.5 bg-white border border-sky-200 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 transition leading-relaxed"></textarea>
 
                     <div class="flex items-center justify-between pt-1">
-                        <span class="text-[10px] text-slate-400">Ingin memasukkan task tambahan ke checklist di
+                        <span class="text-[10px] text-slate-400">Ingin memasukkan tugas tambahan ke daftar periksa di
                             bawah?</span>
                         <button type="button" onclick="syncAdditionalTasksToChecklist()"
                             class="px-2.5 py-1 bg-white hover:bg-sky-100 text-sky-700 border border-sky-200 rounded-lg text-[11px] font-semibold transition cursor-pointer flex items-center gap-1 shadow-2xs">
@@ -702,21 +689,21 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 4v16m8-8H4" />
                             </svg>
-                            <span>+ Masukkan ke Checklist</span>
+                            <span>+ Masukkan ke Daftar Periksa</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- BAGIAN 2: CHECKLIST TASK SELESAI -->
+                <!-- BAGIAN 2: DAFTAR PERIKSA TUGAS SELESAI -->
                 <div class="space-y-3">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-1">
                         <div>
                             <label class="block text-xs font-bold text-slate-900 uppercase tracking-wider">
-                                ☑️ 2. Checklist Task yang Sudah Selesai
+                                ☑️ 2. Daftar Periksa Tugas yang Sudah Selesai
                             </label>
                             <p class="text-[11px] text-slate-500">
-                                Centang task yang <strong>sudah selesai</strong>. Task yang <strong>tidak dicentang</strong>
-                                otomatis tercatat sebagai <em>Belum Selesai (Pending)</em>.
+                                Centang tugas yang <strong>sudah selesai</strong>. Tugas yang <strong>tidak dicentang</strong>
+                                otomatis tercatat sebagai <em>Belum Selesai (Tertunda)</em>.
                             </p>
                         </div>
 
@@ -738,10 +725,10 @@
                         <div class="flex items-center justify-between text-xs">
                             <span class="font-bold text-slate-700 flex items-center gap-1.5">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span id="update-checklist-counter">0 dari 0 task selesai (0%)</span>
+                                <span id="update-checklist-counter">0 dari 0 tugas selesai (0%)</span>
                             </span>
                             <span id="update-checklist-pending-counter" class="text-[11px] font-medium text-amber-700">
-                                0 pending
+                                0 tertunda
                             </span>
                         </div>
                         <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
@@ -750,7 +737,7 @@
                         </div>
                     </div>
 
-                    <!-- Container Checklist Dinamis -->
+                    <!-- Container Daftar Periksa Dinamis -->
                     <div id="update-tasks-checklist-container" class="space-y-2 max-h-64 overflow-y-auto pr-1">
                         <!-- Dimuat lewat Javascript -->
                     </div>
@@ -758,7 +745,7 @@
                     <!-- Fallback manual jika kosong -->
                     <div id="update-empty-tasks-alert"
                         class="hidden p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-800">
-                        Belum ada daftar task pagi yang tercatat. Silakan ketik task langsung di task tambahan di atas.
+                        Belum ada daftar tugas pagi yang tercatat. Silakan ketik tugas langsung di tugas tambahan di atas.
                     </div>
                 </div>
 
@@ -782,7 +769,7 @@
 
     <!-- JAVASCRIPT MODAL HANDLERS -->
     <script>
-        // State checklist sore
+        // State daftar periksa sore
         let currentMorningTasksList = [];
         let currentAdditionalTasksList = [];
 
@@ -872,7 +859,7 @@
             document.getElementById('create-morning-tasks').value = '';
             document.getElementById('create-evening-additional-tasks').value = '';
 
-            // Reset toggle report sore
+            // Reset toggle laporan sore
             document.getElementById('create-with-evening').value = '0';
             const eveningContainer = document.getElementById('create-evening-container');
             const toggleLabel = document.getElementById('create-evening-toggle-label');
@@ -880,12 +867,12 @@
             const submitBtnText = document.getElementById('create-submit-button-text');
 
             if (eveningContainer) eveningContainer.classList.add('hidden');
-            if (toggleLabel) toggleLabel.innerText = 'Buka Checklist';
+            if (toggleLabel) toggleLabel.innerText = 'Buka Daftar Periksa';
             if (badge) {
                 badge.innerText = '';
                 badge.className = 'w-5 h-5 rounded-md border border-slate-300 bg-white flex items-center justify-center text-emerald-600 text-xs font-bold';
             }
-            if (submitBtnText) submitBtnText.innerText = 'Simpan Laporan Task';
+            if (submitBtnText) submitBtnText.innerText = 'Simpan Laporan Tugas';
 
             currentCreateMorningTasks = [];
             currentCreateAdditionalTasks = [];
@@ -908,7 +895,7 @@
             if (container.classList.contains('hidden')) {
                 container.classList.remove('hidden');
                 hiddenInput.value = '1';
-                label.innerText = 'Tutup Checklist';
+                label.innerText = 'Tutup Daftar Periksa';
                 badge.innerText = '✓';
                 badge.className = 'w-5 h-5 rounded-md border border-emerald-400 bg-emerald-500 text-white flex items-center justify-center text-xs font-bold';
                 if (submitBtnText) submitBtnText.innerText = 'Simpan Laporan Pagi & Evaluasi Sore';
@@ -916,10 +903,10 @@
             } else {
                 container.classList.add('hidden');
                 hiddenInput.value = '0';
-                label.innerText = 'Buka Checklist';
+                label.innerText = 'Buka Daftar Periksa';
                 badge.innerText = '';
                 badge.className = 'w-5 h-5 rounded-md border border-slate-300 bg-white flex items-center justify-center text-emerald-600 text-xs font-bold';
-                if (submitBtnText) submitBtnText.innerText = 'Simpan Laporan Task';
+                if (submitBtnText) submitBtnText.innerText = 'Simpan Laporan Tugas';
             }
         }
 
@@ -944,7 +931,7 @@
 
             if (emptyAlert) emptyAlert.classList.add('hidden');
 
-            // 1. Render Task Pagi
+            // 1. Render Tugas Pagi
             currentCreateMorningTasks.forEach((task, idx) => {
                 const card = document.createElement('label');
                 card.id = `create-morning-task-card-${idx}`;
@@ -965,14 +952,14 @@
                             </span>
                         </div>
                         <p class="text-[10px] text-slate-400 mt-0.5 task-status-hint">
-                            Tidak dicentang = otomatis tercatat sebagai Pending
+                            Tidak dicentang = otomatis tercatat sebagai Tertunda
                         </p>
                     </div>
                 `;
                 container.appendChild(card);
             });
 
-            // 2. Render Task Tambahan jika ada
+            // 2. Render Tugas Tambahan jika ada
             currentCreateAdditionalTasks.forEach((task, aIdx) => {
                 const card = document.createElement('label');
                 card.id = `create-additional-task-card-${aIdx}`;
@@ -993,7 +980,7 @@
                             </span>
                         </div>
                         <p class="text-[10px] text-slate-400 mt-0.5 task-status-hint">
-                            Tercatat di daftar task selesai sore
+                            Tercatat di daftar tugas selesai sore
                         </p>
                     </div>
                 `;
@@ -1019,7 +1006,7 @@
                     badge.innerText = '✓ Selesai';
                 }
                 if (labelText) labelText.classList.add('text-emerald-950', 'font-bold');
-                if (hint) hint.innerText = 'Tercatat di daftar task selesai sore';
+                if (hint) hint.innerText = 'Tercatat di daftar tugas selesai sore';
             } else {
                 card.className = isAdditional
                     ? 'task-checklist-item flex items-start gap-3 p-3 rounded-2xl border transition cursor-pointer select-none bg-sky-50/40 border-sky-200 hover:bg-sky-50'
@@ -1029,7 +1016,7 @@
                     badge.innerText = 'Belum Selesai';
                 }
                 if (labelText) labelText.classList.remove('text-emerald-950');
-                if (hint) hint.innerText = 'Tidak dicentang = otomatis tercatat sebagai Pending';
+                if (hint) hint.innerText = 'Tidak dicentang = otomatis tercatat sebagai Tertunda';
             }
 
             updateCreateChecklistCounter();
@@ -1040,7 +1027,7 @@
             const lines = parseTasksIntoList(rawAdditional);
 
             if (lines.length === 0) {
-                alert('Ketik terlebih dahulu task tambahan pada kotak di atas.');
+                alert('Ketik terlebih dahulu tugas tambahan pada kotak di atas.');
                 return;
             }
 
@@ -1073,8 +1060,8 @@
             const pendingCounter = document.getElementById('create-checklist-pending-counter');
             const bar = document.getElementById('create-checklist-progress-bar');
 
-            if (counter) counter.innerText = `${completed} dari ${total} task selesai (${percent}%)`;
-            if (pendingCounter) pendingCounter.innerText = `${pending} pending`;
+            if (counter) counter.innerText = `${completed} dari ${total} tugas selesai (${percent}%)`;
+            if (pendingCounter) pendingCounter.innerText = `${pending} tertunda`;
             if (bar) bar.style.width = `${percent}%`;
         }
 
@@ -1087,7 +1074,7 @@
             currentMorningTasksList = parseTasksIntoList(morningTasks);
             currentAdditionalTasksList = [];
 
-            // Jika dalam mode edit (sudah ada data completed sebelumnya)
+            // Jika dalam mode edit (sudah ada data selesai sebelumnya)
             const completedLines = parseTasksIntoList(existingCompleted);
 
             renderChecklist(completedLines);
@@ -1111,7 +1098,7 @@
 
             emptyAlert.classList.add('hidden');
 
-            // 1. Render Task Pagi
+            // 1. Render Tugas Pagi
             currentMorningTasksList.forEach((task, idx) => {
                 const isChecked = completedLines.length > 0 && completedLines.some(cLine =>
                     cLine.toLowerCase().includes(task.toLowerCase()) || task.toLowerCase().includes(cLine
@@ -1141,14 +1128,14 @@
                             </span>
                         </div>
                         <p class="text-[10px] text-slate-400 mt-0.5 task-status-hint">
-                            ${isChecked ? 'Tercatat di daftar task selesai sore' : 'Tidak dicentang = otomatis tercatat sebagai Pending'}
+                            ${isChecked ? 'Tercatat di daftar tugas selesai sore' : 'Tidak dicentang = otomatis tercatat sebagai Tertunda'}
                         </p>
                     </div>
                 `;
                 container.appendChild(card);
             });
 
-            // 2. Render Task Tambahan jika dimasukkan ke checklist
+            // 2. Render Tugas Tambahan jika dimasukkan ke daftar periksa
             currentAdditionalTasksList.forEach((task, aIdx) => {
                 const card = document.createElement('label');
                 card.id = `additional-task-card-${aIdx}`;
@@ -1170,7 +1157,7 @@
                             </span>
                         </div>
                         <p class="text-[10px] text-slate-400 mt-0.5 task-status-hint">
-                            Tercatat di daftar task selesai sore
+                            Tercatat di daftar tugas selesai sore
                         </p>
                     </div>
                 `;
@@ -1198,7 +1185,7 @@
                     badge.innerText = '✓ Selesai';
                 }
                 if (labelText) labelText.classList.add('text-emerald-950', 'font-bold');
-                if (hint) hint.innerText = 'Tercatat di daftar task selesai sore';
+                if (hint) hint.innerText = 'Tercatat di daftar tugas selesai sore';
             } else {
                 card.className = isAdditional ?
                     'task-checklist-item flex items-start gap-3 p-3 rounded-2xl border transition cursor-pointer select-none bg-sky-50/40 border-sky-200 hover:bg-sky-50' :
@@ -1209,7 +1196,7 @@
                     badge.innerText = ' Belum Selesai';
                 }
                 if (labelText) labelText.classList.remove('text-emerald-950');
-                if (hint) hint.innerText = 'Tidak dicentang = otomatis tercatat sebagai Pending';
+                if (hint) hint.innerText = 'Tidak dicentang = otomatis tercatat sebagai Tertunda';
             }
 
             updateChecklistCounter();
@@ -1220,7 +1207,7 @@
             const lines = parseTasksIntoList(rawAdditional);
 
             if (lines.length === 0) {
-                alert('Ketik terlebih dahulu task tambahan pada kotak di atas.');
+                alert('Ketik terlebih dahulu tugas tambahan pada kotak di atas.');
                 return;
             }
 
@@ -1255,8 +1242,8 @@
             const pendingCounter = document.getElementById('update-checklist-pending-counter');
             const bar = document.getElementById('update-checklist-progress-bar');
 
-            if (counter) counter.innerText = `${completed} dari ${total} task selesai (${percent}%)`;
-            if (pendingCounter) pendingCounter.innerText = `${pending} pending`;
+            if (counter) counter.innerText = `${completed} dari ${total} tugas selesai (${percent}%)`;
+            if (pendingCounter) pendingCounter.innerText = `${pending} tertunda`;
             if (bar) bar.style.width = `${percent}%`;
         }
     </script>

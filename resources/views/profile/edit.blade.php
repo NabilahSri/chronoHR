@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Detail & Edit Profil — ChronoHR')
+@section('title', 'Detail & Ubah Profil - ChronoHR')
 @section('page_title', 'Profil Pengguna & Pengaturan Akun')
 
 @section('content')
@@ -30,7 +30,7 @@
                         @if($user->can_approve_leaves)
                             <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
                                 <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                                Otoritas Approver
+                                Otoritas Penyetuju Izin
                             </span>
                         @endif
                     </div>
@@ -46,7 +46,7 @@
                         <span>UID: {{ $user->rfid_uid }}</span>
                     </div>
                 @else
-                    <div class="text-amber-400 font-bold">Belum Dipairing</div>
+                    <div class="text-amber-400 font-bold">Belum Ditautkan</div>
                 @endif
             </div>
         </div>
@@ -58,7 +58,7 @@
     <div class="bg-white/95 rounded-3xl border border-slate-200/90 p-6 sm:p-8 shadow-xs">
         <div class="border-b border-slate-100 pb-5 mb-6">
             <h3 class="text-base font-bold text-slate-900 tracking-tight">Formulir Pembaruan Data Profil</h3>
-            <p class="text-xs text-slate-500 mt-1">Perbarui informasi identitas, nomor rekening transfer payroll, atau ganti kata sandi login.</p>
+            <p class="text-xs text-slate-500 mt-1">Perbarui informasi identitas, nomor rekening transfer penggajian, atau ganti kata sandi akun.</p>
         </div>
 
         <form action="{{ route('profile.update') }}" method="POST" class="space-y-6">

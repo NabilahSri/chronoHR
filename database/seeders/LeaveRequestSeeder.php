@@ -29,7 +29,7 @@ class LeaveRequestSeeder extends Seeder
             ],
             [
                 'email' => 'dimas@chrono.id',
-                'type' => 'WFH',
+                'type' => 'WFA',
                 'start_date' => '2026-10-12',
                 'end_date' => '2026-10-13',
                 'reason' => 'Perbaikan instalasi jaringan rumah & remote coding sprint.',
@@ -56,7 +56,7 @@ class LeaveRequestSeeder extends Seeder
             ],
             [
                 'email' => 'karyawan@test.com',
-                'type' => 'WFH',
+                'type' => 'WFA',
                 'start_date' => '2026-10-20',
                 'end_date' => '2026-10-21',
                 'reason' => 'Menjaga anggota keluarga yang sedang opname di rumah sakit.',

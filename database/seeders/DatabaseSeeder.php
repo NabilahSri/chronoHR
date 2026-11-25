@@ -18,6 +18,8 @@ class DatabaseSeeder extends Seeder
             DeviceSeeder::class,
             AttendanceSeeder::class,
             DailyReportSeeder::class,
+            SanctionSeeder::class,
+            HolidaySeeder::class,
         ]);
     }
 }

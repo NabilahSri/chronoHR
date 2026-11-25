@@ -6,8 +6,10 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Approval\LeaveApprovalController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Executive\DashboardController as ExecutiveDashboardController;
+use App\Http\Controllers\Finance\EmployeeCompensationController;
 use App\Http\Controllers\Finance\PayrollController;
 use App\Http\Controllers\Finance\ProjectIncentiveController;
+use App\Http\Controllers\SanctionController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -15,7 +17,9 @@ Route::get('/', function () {
 });
 
 // IoT Hardware Heartbeat & Sync Endpoint (Unauthenticated, CSRF excluded)
+// IoT Hardware Heartbeat & RFID Tap Endpoints (Unauthenticated, CSRF excluded)
 Route::post('/devices/heartbeat', [\App\Http\Controllers\Admin\DeviceController::class, 'heartbeat'])->name('devices.heartbeat');
+Route::post('/devices/rfid-tap', [\App\Http\Controllers\Admin\DeviceController::class, 'rfidTap'])->name('devices.rfid-tap');
 
 Route::middleware('guest')->group(function () {
     Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -36,18 +40,26 @@ Route::middleware('auth')->group(function () {
         Route::resource('users', UserController::class)->except(['show']);
         Route::get('/settings', [SettingController::class, 'index'])->name('settings.index');
         Route::put('/settings', [SettingController::class, 'update'])->name('settings.update');
+        Route::post('/settings/holidays', [SettingController::class, 'storeHoliday'])->name('settings.holidays.store');
+        Route::delete('/settings/holidays/{holiday}', [SettingController::class, 'destroyHoliday'])->name('settings.holidays.destroy');
 
         // IoT Device & Hardware Maintenance
+        Route::get('/devices/latest-scan', [\App\Http\Controllers\Admin\DeviceController::class, 'latestScan'])->name('devices.latest-scan');
         Route::resource('devices', \App\Http\Controllers\Admin\DeviceController::class)->except(['show', 'create', 'edit']);
         Route::patch('/devices/{device}/maintenance', [\App\Http\Controllers\Admin\DeviceController::class, 'toggleMaintenance'])->name('devices.maintenance');
         Route::patch('/devices/{device}/mode', [\App\Http\Controllers\Admin\DeviceController::class, 'setMode'])->name('devices.mode');
 
         // Attendance Logs
+        // Attendance Logs & Manual Override
         Route::get('/attendances', [\App\Http\Controllers\Admin\AttendanceController::class, 'index'])->name('attendances.index');
+        Route::post('/attendances/manual-override', [\App\Http\Controllers\Admin\AttendanceController::class, 'manualOverride'])->name('attendances.override');
     });
 
     // Finance & HRD Routes (Finance & Super Admin)
     Route::middleware('role:finance,super_admin')->prefix('finance')->name('finance.')->group(function () {
+        Route::get('/compensations', [EmployeeCompensationController::class, 'index'])->name('compensations.index');
+        Route::put('/compensations/{user}', [EmployeeCompensationController::class, 'update'])->name('compensations.update');
+
         Route::get('/payrolls', [PayrollController::class, 'index'])->name('payroll.index');
         Route::post('/payrolls/generate', [PayrollController::class, 'generate'])->name('payroll.generate');
         Route::post('/payrolls/publish', [PayrollController::class, 'publish'])->name('payroll.publish');
@@ -69,6 +81,20 @@ Route::middleware('auth')->group(function () {
     });
 
     // Reports & Rekapitulasi Routes (Super Admin, CEO, Finance)
+    Route::middleware('role:super_admin,ceo,finance')->group(function () {
+        Route::get('/sanctions', [SanctionController::class, 'index'])->name('sanctions.index');
+        Route::get('/sanctions/{employeeSanction}/pdf', [SanctionController::class, 'downloadPdf'])->name('sanctions.pdf');
+    });
+
+    Route::middleware('role:super_admin,finance')->prefix('sanctions')->name('sanctions.')->group(function () {
+        Route::post('/detect', [SanctionController::class, 'detectAutoSanctions'])->name('detect');
+        Route::post('/', [SanctionController::class, 'storeSanction'])->name('store');
+        Route::put('/{employeeSanction}', [SanctionController::class, 'updateSanction'])->name('update');
+        Route::post('/rules', [SanctionController::class, 'storeRule'])->name('rules.store');
+        Route::put('/rules/{sanctionRule}', [SanctionController::class, 'updateRule'])->name('rules.update');
+        Route::delete('/rules/{sanctionRule}', [SanctionController::class, 'destroyRule'])->name('rules.destroy');
+    });
+
     Route::middleware('role:super_admin,ceo,finance')->prefix('reports')->name('reports.')->group(function () {
         Route::get('/', [\App\Http\Controllers\ReportController::class, 'index'])->name('index');
         Route::get('/attendances', [\App\Http\Controllers\ReportController::class, 'attendances'])->name('attendances');
@@ -86,6 +112,9 @@ Route::middleware('auth')->group(function () {
 
     // Location Attendance Check-in Route (GPS Web Portal)
     Route::post('/attendances/location-check-in', [\App\Http\Controllers\Admin\AttendanceController::class, 'locationCheckIn'])->name('attendances.location-check-in');
+
+    // Interactive Mobile REST API & IoT Documentation Portal
+    Route::get('/api-docs', fn() => view('api_docs.index'))->name('api.docs');
 });
 
 // API Endpoint for Location Attendance Check-in (Mobile / Kiosk / External GPS Sync)
@@ -95,7 +124,7 @@ Route::post('/api/attendances/location-check-in', function (\Illuminate\Http\Req
         'email' => 'nullable|email|exists:users,email',
         'latitude' => 'required|numeric|between:-90,90',
         'longitude' => 'required|numeric|between:-180,180',
-        'presence_type' => 'required|in:ON_SITE,WFH,AUTO',
+        'presence_type' => 'required|in:ON_SITE,WFA,AUTO',
         'notes' => 'nullable|string|max:255',
     ]);
 

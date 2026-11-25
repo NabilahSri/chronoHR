@@ -1,10 +1,89 @@
 @extends('layouts.app')
 
-@section('title', 'Persetujuan Cuti & Izin — ChronoHR ')
-@section('page_title', 'Pengajuan Izin & WFH')
+@section('title', 'Persetujuan Cuti & Izin - ChronoHR')
+@section('page_title', 'Pengajuan Izin & WFA')
 
 @section('content')
-    <div class="space-y-8">
+    <div class="space-y-6">
+
+        <!-- Kartu Filter Pengajuan Izin & WFA -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs">
+            <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Filter Pengajuan Izin, Sakit & WFA</h3>
+                        <p class="text-xs text-slate-600">Saring antrean maupun riwayat keputusan berdasarkan nama personil, jenis pengajuan, atau status keputusan.</p>
+                    </div>
+                </div>
+                @if (request()->hasAny(['user_id', 'search', 'type', 'status']))
+                    <a href="{{ route('approval.index') }}"
+                        class="text-xs text-sky-700 hover:text-sky-900 font-bold underline transition">
+                        Atur Ulang Filter
+                    </a>
+                @endif
+            </div>
+
+            <form method="GET" action="{{ route('approval.index') }}">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <!-- Personil Karyawan (Searchable Dropdown) -->
+                    <div>
+                        <label for="approval_filter_user_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Personil Karyawan
+                        </label>
+                        <select id="approval_filter_user_id" name="user_id"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Personil</option>
+                            @foreach ($users ?? [] as $u)
+                                <option value="{{ $u->id }}" {{ ($userId ?? '') == $u->id ? 'selected' : '' }}>
+                                    {{ $u->name }} ({{ $u->employment_type === 'INTERN' ? 'MAGANG' : $u->employment_type }})
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Jenis Pengajuan -->
+                    <div>
+                        <label for="approval_filter_type" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Jenis Pengajuan
+                        </label>
+                        <select id="approval_filter_type" name="type"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Jenis Pengajuan</option>
+                            <option value="WFA" {{ ($type ?? '') === 'WFA' ? 'selected' : '' }}>WFA (Kerja Jarak Jauh)</option>
+                            <option value="SAKIT" {{ ($type ?? '') === 'SAKIT' ? 'selected' : '' }}>Sakit</option>
+                            <option value="IZIN" {{ ($type ?? '') === 'IZIN' ? 'selected' : '' }}>Izin Keperluan Pribadi</option>
+                        </select>
+                    </div>
+
+                    <!-- Status Riwayat -->
+                    <div>
+                        <label for="approval_filter_status" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Status Riwayat Keputusan
+                        </label>
+                        <select id="approval_filter_status" name="status"
+                            class="w-full h-[42px] px-3.5 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Status Keputusan</option>
+                            <option value="APPROVED" {{ ($status ?? '') === 'APPROVED' ? 'selected' : '' }}>Disetujui</option>
+                            <option value="REJECTED" {{ ($status ?? '') === 'REJECTED' ? 'selected' : '' }}>Ditolak</option>
+                        </select>
+                    </div>
+
+                    <!-- Tombol Terapkan -->
+                    <div>
+                        <button type="submit"
+                            class="w-full h-[42px] px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-sky-600">
+                            Terapkan Filter
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
 
         <!-- Pending Requests Section -->
         <div>
@@ -14,7 +93,7 @@
                         <span>Menunggu Persetujuan</span>
                         <span
                             class="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-100 text-amber-800 border border-amber-200">
-                            {{ $pendingLeaves->count() }} Antrean
+                            {{ $pendingLeaves->total() }} Antrean
                         </span>
                     </h2>
                     <p class="text-xs text-slate-500 mt-0.5">Pengajuan yang disetujui akan langsung menggenerasi data pada
@@ -35,13 +114,13 @@
                                         {{ strtoupper(substr($leave->user->name ?? 'K', 0, 2)) }}
                                     </div>
                                     <div>
-                                        <h3 class="font-bold text-slate-900 text-sm">{{ $leave->user->name ?? '—' }}</h3>
+                                        <h3 class="font-bold text-slate-900 text-sm">{{ $leave->user->name ?? '-' }}</h3>
                                         <p class="text-xs text-slate-400 font-mono">{{ $leave->user->email ?? '' }}</p>
                                     </div>
                                 </div>
 
                                 <span
-                                    class="px-3 py-1 rounded-full text-xs font-mono font-extrabold {{ $leave->type === 'WFH' ? 'bg-sky-50 text-sky-700 border border-sky-200' : ($leave->type === 'SAKIT' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200') }}">
+                                    class="px-3 py-1 rounded-full text-xs font-mono font-extrabold {{ $leave->type === 'WFA' ? 'bg-sky-50 text-sky-700 border border-sky-200' : ($leave->type === 'SAKIT' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200') }}">
                                     {{ $leave->type }}
                                 </span>
                             </div>
@@ -110,11 +189,17 @@
                             </svg>
                         </div>
                         <p class="font-bold text-slate-700">Semua Pengajuan Telah Ditinjau</p>
-                        <p class="text-xs text-slate-400 mt-1">Tidak ada permohonan cuti, izin, atau WFH yang sedang
+                        <p class="text-xs text-slate-400 mt-1">Tidak ada permohonan cuti, izin, atau WFA yang sedang
                             tertunda.</p>
                     </div>
                 @endforelse
             </div>
+
+            @if ($pendingLeaves->hasPages())
+                <div class="mt-4 bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs">
+                    @include('partials.pagination', ['paginator' => $pendingLeaves])
+                </div>
+            @endif
         </div>
 
         <!-- History Requests Section -->
@@ -127,7 +212,7 @@
                 </div>
                 <span
                     class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                    Terbaru (20 Data)
+                    Total: {{ $historyLeaves->total() }} Data
                 </span>
             </div>
 
@@ -148,7 +233,7 @@
                         @forelse($historyLeaves as $item)
                             <tr class="hover:bg-slate-50/70 transition-colors">
                                 <td class="px-6 py-4">
-                                    <div class="font-bold text-slate-900">{{ $item->user->name ?? '—' }}</div>
+                                    <div class="font-bold text-slate-900">{{ $item->user->name ?? '-' }}</div>
                                     <div class="text-xs text-slate-400 font-mono">{{ $item->user->email ?? '' }}</div>
                                 </td>
                                 <td class="px-6 py-4 font-mono text-xs font-bold">
@@ -170,7 +255,7 @@
                                                     d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
                                                     clip-rule="evenodd" />
                                             </svg>
-                                            APPROVED
+                                            DISETUJUI
                                         </span>
                                     @else
                                         <span
@@ -180,12 +265,12 @@
                                                     d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
                                                     clip-rule="evenodd" />
                                             </svg>
-                                            REJECTED
+                                            DITOLAK
                                         </span>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 text-xs font-semibold text-slate-700">
-                                    {{ $item->approver->name ?? '—' }}</td>
+                                    {{ $item->approver->name ?? '-' }}</td>
                                 <td class="px-6 py-4 text-xs text-slate-500 max-w-xs truncate">
                                     {{ $item->status === 'REJECTED' ? 'Alasan Tolak: ' . $item->rejection_reason : $item->reason }}
                                 </td>
@@ -201,11 +286,7 @@
                 </table>
             </div>
 
-            @if ($historyLeaves->hasPages())
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                    {{ $historyLeaves->links() }}
-                </div>
-            @endif
+            @include('partials.pagination', ['paginator' => $historyLeaves])
         </div>
 
     </div>

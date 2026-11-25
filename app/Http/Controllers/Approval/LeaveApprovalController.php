@@ -4,25 +4,68 @@ namespace App\Http\Controllers\Approval;
 
 use App\Http\Controllers\Controller;
 use App\Models\LeaveRequest;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class LeaveApprovalController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
-        $pendingLeaves = LeaveRequest::with('user')
-            ->where('status', 'PENDING')
-            ->latest()
-            ->get();
+        $search = $request->input('search');
+        $userId = $request->input('user_id');
+        $type = $request->input('type');
+        $status = $request->input('status');
 
-        $historyLeaves = LeaveRequest::with(['user', 'approver'])
-            ->whereIn('status', ['APPROVED', 'REJECTED'])
-            ->latest('updated_at')
-            ->paginate(15);
+        $pendingQuery = LeaveRequest::with('user')
+            ->where('status', 'PENDING');
 
-        return view('approvals.index', compact('pendingLeaves', 'historyLeaves'));
+        $historyQuery = LeaveRequest::with(['user', 'approver'])
+            ->whereIn('status', ['APPROVED', 'REJECTED']);
+
+        if ($userId) {
+            $pendingQuery->where('user_id', $userId);
+            $historyQuery->where('user_id', $userId);
+        }
+
+        if ($search) {
+            $pendingQuery->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+            $historyQuery->whereHas('user', function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        if ($type) {
+            $pendingQuery->where('type', $type);
+            $historyQuery->where('type', $type);
+        }
+
+        if ($status && in_array($status, ['APPROVED', 'REJECTED'])) {
+            $historyQuery->where('status', $status);
+        }
+
+        $perPage = in_array((int) $request->input('per_page'), [5, 10, 15, 25, 50])
+            ? (int) $request->input('per_page')
+            : 10;
+
+        $pendingLeaves = $pendingQuery->latest()->paginate(6, ['*'], 'pending_page')->withQueryString();
+        $historyLeaves = $historyQuery->latest('updated_at')->paginate($perPage)->withQueryString();
+        $users = User::orderBy('name')->get(['id', 'name', 'email', 'employment_type']);
+
+        return view('approvals.index', compact(
+            'pendingLeaves',
+            'historyLeaves',
+            'users',
+            'userId',
+            'search',
+            'type',
+            'status'
+        ));
     }
 
     public function approve(LeaveRequest $leaveRequest): RedirectResponse

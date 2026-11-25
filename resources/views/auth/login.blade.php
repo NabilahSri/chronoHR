@@ -4,11 +4,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ChronoHR — Precision Time, Effortless Payroll | Portal Login</title>
+    @php
+        $bName = $appBrandName ?? 'ChronoHR';
+        $bSlogan = $appBrandSlogan ?? 'Presisi Waktu & Penggajian';
+    @endphp
+    <title>{{ $bName }} - {{ $bSlogan }} | Masuk Portal</title>
 
-    <!-- Favicon SVG -->
-    <link rel="icon" type="image/svg+xml"
-        href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230F172A'/><circle cx='32' cy='32' r='23' stroke='%2338BDF8' stroke-width='2.5' fill='none'/><rect x='22' y='28' width='5' height='10' rx='2' fill='%2338BDF8'/><rect x='30' y='21' width='5' height='17' rx='2' fill='%2338BDF8'/><rect x='38' y='14' width='5' height='24' rx='2' fill='%2338BDF8'/><path d='M21 28l9 9 16-19' stroke='%23FFFFFF' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+    <!-- Favicon -->
+    @if (!empty($appBrandLogoUrl))
+        <link rel="icon" href="{{ $appBrandLogoUrl }}">
+    @else
+        <link rel="icon" type="image/svg+xml"
+            href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='16' fill='%230F172A'/><circle cx='32' cy='32' r='23' stroke='%2338BDF8' stroke-width='2.5' fill='none'/><rect x='22' y='28' width='5' height='10' rx='2' fill='%2338BDF8'/><rect x='30' y='21' width='5' height='17' rx='2' fill='%2338BDF8'/><rect x='38' y='14' width='5' height='24' rx='2' fill='%2338BDF8'/><path d='M21 28l9 9 16-19' stroke='%23FFFFFF' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>">
+    @endif
 
     <!-- Fonts: Plus Jakarta Sans for modern SaaS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -27,23 +35,32 @@
     <header
         class="lg:hidden flex items-center justify-between px-5 py-3.5 bg-white border-b border-slate-200/80 sticky top-0 z-30 shadow-2xs">
         <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-xl bg-slate-900 p-1 flex items-center justify-center shrink-0">
-                <svg class="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="32" cy="32" r="23" stroke="#CBD5E1" stroke-width="2"
-                        stroke-dasharray="2 3" />
-                    <path d="M 32 9 A 23 23 0 0 1 55 32" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" />
-                    <rect x="15" y="37" width="34" height="15" rx="3.5" fill="#0F172A" stroke="#38BDF8"
-                        stroke-width="1.5" />
-                    <rect x="23" y="27" width="4.5" height="9" rx="1.5" fill="#38BDF8" />
-                    <rect x="29.8" y="20.5" width="4.5" height="15.5" rx="1.5" fill="#38BDF8" />
-                    <rect x="36.5" y="14" width="4.5" height="22" rx="1.5" fill="#38BDF8" />
-                    <path d="M 21.5 27.5 L 29.5 35.5 L 45.5 15.5" stroke="#FFFFFF" stroke-width="3.5"
-                        stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+            <div class="w-8 h-8 rounded-xl bg-slate-900 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+                @if (!empty($appBrandLogoUrl))
+                    <img src="{{ $appBrandLogoUrl }}" alt="{{ $bName }}" class="w-full h-full object-contain">
+                @else
+                    <svg class="w-full h-full" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="32" cy="32" r="23" stroke="#CBD5E1" stroke-width="2"
+                            stroke-dasharray="2 3" />
+                        <path d="M 32 9 A 23 23 0 0 1 55 32" stroke="#38BDF8" stroke-width="3" stroke-linecap="round" />
+                        <rect x="15" y="37" width="34" height="15" rx="3.5" fill="#0F172A" stroke="#38BDF8"
+                            stroke-width="1.5" />
+                        <rect x="23" y="27" width="4.5" height="9" rx="1.5" fill="#38BDF8" />
+                        <rect x="29.8" y="20.5" width="4.5" height="15.5" rx="1.5" fill="#38BDF8" />
+                        <rect x="36.5" y="14" width="4.5" height="22" rx="1.5" fill="#38BDF8" />
+                        <path d="M 21.5 27.5 L 29.5 35.5 L 45.5 15.5" stroke="#FFFFFF" stroke-width="3.5"
+                            stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                @endif
             </div>
             <div>
-                <span class="text-base font-bold tracking-tight text-slate-900">Chrono<span
-                        class="text-sky-600">HR</span></span>
+                <span class="text-base font-bold tracking-tight text-slate-900">
+                    @if (str_ends_with($bName, 'HR') && strlen($bName) > 2)
+                        {{ substr($bName, 0, -2) }}<span class="text-sky-600">HR</span>
+                    @else
+                        {{ $bName }}
+                    @endif
+                </span>
             </div>
         </div>
 
@@ -76,49 +93,56 @@
             <!-- Top Row: Brand & System Status -->
             <div class="relative z-10 flex items-center justify-between gap-4">
                 <div class="flex items-center gap-3">
-                    <!-- Unified Logo: Clock Dial + RFID Card Slot + Growth Bars + Checkmark -->
+                    <!-- Dynamic or Default Unified Logo -->
                     <div
-                        class="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-center shrink-0">
-                        <svg class="w-full h-full" viewBox="0 0 64 64" fill="none"
-                            xmlns="http://www.w3.org/2000/svg">
-                            <!-- Chronometer Dial Ring -->
-                            <circle cx="32" cy="32" r="23" stroke="#CBD5E1" stroke-width="1.8"
-                                stroke-dasharray="2 3" opacity="0.9" />
-                            <path d="M 32 9 A 23 23 0 0 1 55 32" stroke="#0284C7" stroke-width="2.6"
-                                stroke-linecap="round" />
-                            <circle cx="32" cy="9" r="2.2" fill="#0284C7" />
+                        class="w-12 h-12 rounded-2xl bg-white border border-slate-200 shadow-sm p-2 flex items-center justify-center shrink-0 overflow-hidden">
+                        @if (!empty($appBrandLogoUrl))
+                            <img src="{{ $appBrandLogoUrl }}" alt="{{ $bName }}" class="w-full h-full object-contain">
+                        @else
+                            <svg class="w-full h-full" viewBox="0 0 64 64" fill="none"
+                                xmlns="http://www.w3.org/2000/svg">
+                                <!-- Chronometer Dial Ring -->
+                                <circle cx="32" cy="32" r="23" stroke="#CBD5E1" stroke-width="1.8"
+                                    stroke-dasharray="2 3" opacity="0.9" />
+                                <path d="M 32 9 A 23 23 0 0 1 55 32" stroke="#0284C7" stroke-width="2.6"
+                                    stroke-linecap="round" />
+                                <circle cx="32" cy="9" r="2.2" fill="#0284C7" />
 
-                            <!-- RFID Card Slot -->
-                            <rect x="15" y="37" width="34" height="15" rx="3.5" fill="#0F172A"
-                                stroke="#0284C7" stroke-width="1.2" />
-                            <path d="M 20.5 42 A 3.5 3.5 0 0 1 20.5 47" stroke="#38BDF8" stroke-width="1.3"
-                                stroke-linecap="round" fill="none" />
-                            <path d="M 23 40.5 A 6 6 0 0 1 23 48.5" stroke="#38BDF8" stroke-width="1.3"
-                                stroke-linecap="round" fill="none" opacity="0.65" />
-                            <rect x="36" y="41.5" width="8.5" height="6" rx="1.2" fill="#0284C7"
-                                opacity="0.35" stroke="#38BDF8" stroke-width="0.8" />
+                                <!-- RFID Card Slot -->
+                                <rect x="15" y="37" width="34" height="15" rx="3.5" fill="#0F172A"
+                                    stroke="#0284C7" stroke-width="1.2" />
+                                <path d="M 20.5 42 A 3.5 3.5 0 0 1 20.5 47" stroke="#38BDF8" stroke-width="1.3"
+                                    stroke-linecap="round" fill="none" />
+                                <path d="M 23 40.5 A 6 6 0 0 1 23 48.5" stroke="#38BDF8" stroke-width="1.3"
+                                    stroke-linecap="round" fill="none" opacity="0.65" />
+                                <rect x="36" y="41.5" width="8.5" height="6" rx="1.2" fill="#0284C7"
+                                    opacity="0.35" stroke="#38BDF8" stroke-width="0.8" />
 
-                            <!-- Growth Bars -->
-                            <rect x="23" y="27" width="4.5" height="9" rx="1.5" fill="#0284C7"
-                                opacity="0.75" />
-                            <rect x="29.8" y="20.5" width="4.5" height="15.5" rx="1.5" fill="#0284C7"
-                                opacity="0.9" />
-                            <rect x="36.5" y="14" width="4.5" height="22" rx="1.5" fill="#0284C7" />
+                                <!-- Growth Bars -->
+                                <rect x="23" y="27" width="4.5" height="9" rx="1.5" fill="#0284C7"
+                                    opacity="0.75" />
+                                <rect x="29.8" y="20.5" width="4.5" height="15.5" rx="1.5" fill="#0284C7"
+                                    opacity="0.9" />
+                                <rect x="36.5" y="14" width="4.5" height="22" rx="1.5" fill="#0284C7" />
 
-                            <!-- Checkmark Flow -->
-                            <path d="M 21.5 27.5 L 29.5 35.5 L 45.5 15.5" stroke="#0F172A" stroke-width="3.4"
-                                stroke-linecap="round" stroke-linejoin="round" />
-                        </svg>
+                                <!-- Checkmark Flow -->
+                                <path d="M 21.5 27.5 L 29.5 35.5 L 45.5 15.5" stroke="#0F172A" stroke-width="3.4"
+                                    stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                        @endif
                     </div>
 
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="text-xl font-bold tracking-tight text-slate-900">Chrono<span
-                                    class="text-sky-600">HR</span></span>
-                            <span
-                                class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-200/70 text-slate-700"></span>
+                            <span class="text-xl font-bold tracking-tight text-slate-900">
+                                @if (str_ends_with($bName, 'HR') && strlen($bName) > 2)
+                                    {{ substr($bName, 0, -2) }}<span class="text-sky-600">HR</span>
+                                @else
+                                    {{ $bName }}
+                                @endif
+                            </span>
                         </div>
-                        <p class="text-xs text-slate-500 font-medium">Precision Time, Effortless Payroll.</p>
+                        <p class="text-xs text-slate-500 font-medium">{{ $bSlogan }}</p>
                     </div>
                 </div>
 
@@ -155,7 +179,7 @@
 
                 <p class="mt-4 text-sm xl:text-base text-slate-600 leading-relaxed">
                     Satu ekosistem terpadu yang menyatukan pencatatan presensi RFID secara presisi, transparansi
-                    perizinan karyawan, dan kalkulasi payroll instan bebas rekonsiliasi manual.
+                    perizinan karyawan, dan kalkulasi penggajian instan bebas rekonsiliasi manual.
                 </p>
 
                 <!-- Live Chrono Widget: Precision Time Real-time Indicator -->
@@ -201,12 +225,12 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-xs font-semibold text-slate-800 block">RFID Real-Time</span>
-                                <span class="text-[11px] text-slate-500">Tap kartu instan tanpa antrean</span>
+                                <span class="text-xs font-semibold text-slate-800 block">RFID Waktu Nyata</span>
+                                <span class="text-[11px] text-slate-500">Pindai kartu instan tanpa antrean</span>
                             </div>
                         </div>
 
-                        <!-- 2. Otomasi Payroll -->
+                        <!-- 2. Otomasi Penggajian -->
                         <div
                             class="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/60 flex items-start gap-2.5">
                             <div
@@ -217,12 +241,12 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-xs font-semibold text-slate-800 block">Payroll Otomatis</span>
-                                <span class="text-[11px] text-slate-500">Lembur, BPJS & PPh 21 akurat</span>
+                                <span class="text-xs font-semibold text-slate-800 block">Penggajian Otomatis</span>
+                                <span class="text-[11px] text-slate-500">Lembur, potongan WFA & izin akurat</span>
                             </div>
                         </div>
 
-                        <!-- 3. Seamless Approval -->
+                        <!-- 3. Persetujuan Cepat -->
                         <div
                             class="p-2.5 rounded-xl bg-slate-50/90 border border-slate-200/60 flex items-start gap-2.5">
                             <div
@@ -233,8 +257,8 @@
                                 </svg>
                             </div>
                             <div>
-                                <span class="text-xs font-semibold text-slate-800 block">Approval Cepat</span>
-                                <span class="text-[11px] text-slate-500">Workflow izin & cuti transparan</span>
+                                <span class="text-xs font-semibold text-slate-800 block">Persetujuan Cepat</span>
+                                <span class="text-[11px] text-slate-500">Alur izin & cuti transparan</span>
                             </div>
                         </div>
                     </div>
@@ -251,12 +275,12 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                         </svg>
-                        SSL 256-Bit Encrypted
+                        Akses Terotentikasi Peran
                     </span>
                     <span class="text-slate-300">•</span>
-                    <span class="font-medium text-slate-600">ISO 27001 Security Standard</span>
+                    <span class="font-medium text-slate-600">Sistem Presensi & Penggajian Terpadu</span>
                 </div>
-                <span class="text-slate-400">© 2026 ChronoHR Ecosystem</span>
+                <span class="text-slate-400">© 2026 Ekosistem ChronoHR</span>
             </div>
         </section>
 
@@ -284,7 +308,7 @@
                     </div>
 
                     <h2 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
-                        Masuk ke Dashboard
+                        Masuk ke Dasbor
                     </h2>
                     <p class="text-xs sm:text-sm text-slate-500 mt-1">
                         Selamat datang kembali! Silakan masuk ke akun Anda untuk melanjutkan.
@@ -326,7 +350,7 @@
                                 d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                            <span class="font-bold block text-rose-800">Login Gagal</span>
+                            <span class="font-bold block text-rose-800">Gagal Masuk</span>
                             <ul class="mt-1 list-disc list-inside space-y-0.5 text-rose-600">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -426,7 +450,7 @@
 
                 <!-- Mobile Footer (Visible only on < lg screens) -->
                 <div class="lg:hidden text-center pt-2 text-xs text-slate-400 space-y-1">
-                    <p>&copy; 2026 ChronoHR Ecosystem. All rights reserved.</p>
+                    <p>&copy; 2026 Ekosistem ChronoHR. Seluruh hak cipta dilindungi.</p>
                 </div>
 
             </div>
@@ -449,7 +473,7 @@
                     </div>
                     <div>
                         <h3 class="text-sm font-bold text-slate-900">Bantuan Akses Portal</h3>
-                        <p class="text-xs text-slate-500">ChronoHR Identity & Access Management</p>
+                        <p class="text-xs text-slate-500">Manajemen Identitas & Hak Akses ChronoHR</p>
                     </div>
                 </div>
                 <button type="button" onclick="closeHelpModal()"
@@ -463,25 +487,25 @@
 
             <p class="text-xs text-slate-600 leading-relaxed">
                 Portal web ini dikhususkan bagi pemegang peran <strong>Super Admin</strong>, <strong>CEO</strong>, dan
-                <strong>Finance</strong> untuk memantau absensi, menyetujui izin, dan memproses payroll.
+                <strong>Keuangan (Finance)</strong> untuk memantau presensi, menyetujui izin, dan memproses penggajian.
             </p>
 
             <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 text-xs text-slate-600 space-y-2">
                 <div class="flex items-start gap-2">
                     <span class="text-sky-600 font-bold">•</span>
-                    <p><strong>Lupa Kata Sandi:</strong> Hubungi Departemen IT internal perusahaan Anda untuk melakukan
+                    <p><strong>Lupa Kata Sandi:</strong> Hubungi Departemen TI internal perusahaan Anda untuk melakukan
                         pemulihan akses akun.</p>
                 </div>
                 <div class="flex items-start gap-2">
                     <span class="text-sky-600 font-bold">•</span>
-                    <p><strong>Akses Karyawan Umum:</strong> Karyawan staf tidak login melalui portal ini, melainkan via
-                        aplikasi mobile ChronoHR.</p>
+                    <p><strong>Akses Karyawan Umum:</strong> Karyawan staf tidak masuk melalui portal ini, melainkan melalui
+                        Aplikasi Seluler ChronoHR.</p>
                 </div>
             </div>
 
             <button type="button" onclick="closeHelpModal()"
                 class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer">
-                Mengerti & Kembali ke Login
+                Mengerti & Kembali ke Halaman Masuk
             </button>
         </div>
     </div>

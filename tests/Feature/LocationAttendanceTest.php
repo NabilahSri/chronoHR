@@ -32,7 +32,7 @@ class LocationAttendanceTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.settings.index'));
         $response->assertOk();
         $response->assertSee('Titik Acuan Lokasi Kantor');
-        $response->assertSee('Geofencing Presensi');
+        $response->assertSee('Radius Lokasi Presensi');
         $response->assertSee('office_latitude');
         $response->assertSee('office_radius_meters');
 
@@ -40,8 +40,8 @@ class LocationAttendanceTest extends TestCase
         $updateResponse = $this->actingAs($admin)->put(route('admin.settings.update'), [
             'late_tolerance_minutes' => 15,
             'overtime_tolerance_minutes' => 30,
-            'wfh_deduction_kartap_pct' => 10,
-            'wfh_deduction_pkwt_pct' => 30,
+            'wfa_deduction_kartap_pct' => 10,
+            'wfa_deduction_pkwt_pct' => 30,
             'payday_date' => 25,
             'office_name' => 'Menara Chrono Sudirman',
             'office_address' => 'Jl. Jenderal Sudirman No. 1, Jakarta',
@@ -96,8 +96,8 @@ class LocationAttendanceTest extends TestCase
             'user_id' => $intern->id,
             'latitude' => -6.91750000,
             'longitude' => 107.61910000,
-            'presence_type' => 'WFH',
-            'notes' => 'Magang kerja remote WFH',
+            'presence_type' => 'WFA',
+            'notes' => 'Magang kerja remote WFA',
         ]);
 
         $response->assertRedirect();
@@ -105,12 +105,12 @@ class LocationAttendanceTest extends TestCase
         $this->assertDatabaseHas('attendances', [
             'user_id' => $intern->id,
             'date' => now()->toDateString(),
-            'status' => 'WFH',
+            'status' => 'WFA',
             'method' => 'FACIAL_LOCATION',
         ]);
     }
 
-    public function test_employee_records_attendance_for_wfh_using_location(): void
+    public function test_employee_records_attendance_for_wfa_using_location(): void
     {
         $admin = User::where('email', 'admin@test.com')->first();
         $employee = User::where('employment_type', 'KARTAP')->first();
@@ -118,13 +118,13 @@ class LocationAttendanceTest extends TestCase
         // Bersihkan data presensi hari ini jika sudah ada dari seeder
         Attendance::where('user_id', $employee->id)->whereDate('date', now()->toDateString())->delete();
 
-        // Karyawan WFH di luar kantor
+        // Karyawan WFA di luar kantor
         $response = $this->actingAs($admin)->post(route('attendances.location-check-in'), [
             'user_id' => $employee->id,
             'latitude' => -6.30000000,
             'longitude' => 106.80000000,
-            'presence_type' => 'WFH',
-            'notes' => 'WFH disetujui',
+            'presence_type' => 'WFA',
+            'notes' => 'WFA disetujui',
         ]);
 
         $response->assertRedirect();
@@ -132,7 +132,7 @@ class LocationAttendanceTest extends TestCase
         $this->assertDatabaseHas('attendances', [
             'user_id' => $employee->id,
             'date' => now()->toDateString(),
-            'status' => 'WFH',
+            'status' => 'WFA',
             'method' => 'FACIAL_LOCATION',
         ]);
     }

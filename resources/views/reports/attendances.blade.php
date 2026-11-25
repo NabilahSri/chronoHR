@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
-@section('title', 'Laporan Presensi — ChronoHR')
+@section('title', 'Laporan Presensi - ChronoHR')
 @section('page_title', 'Laporan Rekapitulasi Presensi')
-@section('page_subtitle', 'Analisis komprehensif kehadiran on-site RFID, WFH, keterlambatan, dan jam lembur personil.')
+@section('page_subtitle', 'Analisis komprehensif kehadiran kantor RFID, WFA, keterlambatan, dan jam lembur personil.')
 
 @section('content')
     <div class="w-full space-y-6">
@@ -16,17 +16,17 @@
                 <span class="text-[10px] text-slate-500 mt-1">Presensi tercatat</span>
             </div>
 
-            <!-- Hadir On-Site -->
+            <!-- Hadir di Kantor -->
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">On-Site (Kantor)</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-600">Hadir di Kantor</span>
                 <div class="text-2xl font-extrabold text-emerald-600 font-mono mt-2">{{ $stats['on_site'] }}</div>
-                <span class="text-[10px] text-slate-500 mt-1">Tap kartu RFID</span>
+                <span class="text-[10px] text-slate-500 mt-1">Pindai kartu RFID</span>
             </div>
 
-            <!-- WFH -->
+            <!-- WFA -->
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
-                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600">WFH (Remote)</span>
-                <div class="text-2xl font-extrabold text-sky-600 font-mono mt-2">{{ $stats['wfh'] }}</div>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-sky-600">WFA (Jarak Jauh)</span>
+                <div class="text-2xl font-extrabold text-sky-600 font-mono mt-2">{{ $stats['wfa'] }}</div>
                 <span class="text-[10px] text-slate-500 mt-1">Presensi mandiri</span>
             </div>
 
@@ -41,7 +41,7 @@
             <div class="bg-white/95 p-5 rounded-2xl border border-slate-200/90 shadow-xs flex flex-col justify-between">
                 <span class="text-[11px] font-bold uppercase tracking-wider text-rose-600">Terlambat</span>
                 <div class="text-2xl font-extrabold text-rose-600 font-mono mt-2">{{ $stats['late'] }}</div>
-                <span class="text-[10px] text-slate-500 mt-1">Check-in lewat batas</span>
+                <span class="text-[10px] text-slate-500 mt-1">Masuk lewat batas waktu</span>
             </div>
 
             <!-- Jam Lembur -->
@@ -53,56 +53,60 @@
             </div>
         </div>
 
-        <!-- Filter Bar Card (Hidden when printing) -->
-        <div
-            class="bg-white/95 rounded-3xl border border-slate-200/90 p-5 sm:p-6 shadow-xs backdrop-blur-xs w-full print:hidden">
-            <div class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+        <!-- Kartu Filter Rekapitulasi Presensi -->
+        <div class="bg-white rounded-2xl border border-slate-200 p-5 sm:p-6 shadow-xs w-full print:hidden">
+            <div class="flex items-center justify-between pb-3.5 mb-4 border-b border-slate-100">
                 <div class="flex items-center gap-2.5">
-                    <div
-                        class="w-8 h-8 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center font-bold text-xs">
+                    <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-700 flex items-center justify-center font-bold text-xs">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                         </svg>
                     </div>
-                    <h3 class="text-sm font-bold text-slate-900">Parameter Filter Rekapitulasi Presensi</h3>
+                    <div>
+                        <h3 class="text-sm font-bold text-slate-900">Parameter Filter Rekapitulasi Presensi</h3>
+                        <p class="text-xs text-slate-600">Pilih rentang tanggal, personil, status kehadiran, atau ketepatan waktu untuk menyaring laporan.</p>
+                    </div>
                 </div>
                 @if (request()->hasAny(['start_date', 'end_date', 'user_id', 'status', 'is_late']))
                     <a href="{{ route('reports.attendances') }}"
-                        class="text-xs text-sky-600 hover:text-sky-700 font-semibold transition">
-                        Reset Filter
+                        class="text-xs text-sky-700 hover:text-sky-900 font-bold underline transition">
+                        Atur Ulang Filter
                     </a>
                 @endif
             </div>
 
-            <form method="GET" action="{{ route('reports.attendances') }}" class="w-full space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <form method="GET" action="{{ route('reports.attendances') }}" class="w-full">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3.5 items-end">
                     <!-- Dari Tanggal -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Dari
-                            Tanggal</label>
-                        <input type="date" name="start_date" value="{{ $startDate }}"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
+                        <label for="rep_att_start_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Dari Tanggal
+                        </label>
+                        <input type="date" id="rep_att_start_date" name="start_date" value="{{ $startDate }}"
+                            class="w-full h-[42px] px-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
                     </div>
 
                     <!-- Sampai Tanggal -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Sampai
-                            Tanggal</label>
-                        <input type="date" name="end_date" value="{{ $endDate }}"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
+                        <label for="rep_att_end_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Sampai Tanggal
+                        </label>
+                        <input type="date" id="rep_att_end_date" name="end_date" value="{{ $endDate }}"
+                            class="w-full h-[42px] px-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-mono font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
                     </div>
 
                     <!-- Filter Personil -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Personil
-                            Karyawan</label>
-                        <select name="user_id"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua Personil —</option>
+                        <label for="rep_att_user_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Personil Karyawan
+                        </label>
+                        <select id="rep_att_user_id" name="user_id"
+                            class="w-full h-[42px] px-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Personil</option>
                             @foreach ($users as $u)
                                 <option value="{{ $u->id }}" {{ $userId == $u->id ? 'selected' : '' }}>
-                                    {{ $u->name }} ({{ $u->employment_type }})
+                                    {{ $u->name }} ({{ $u->employment_type === 'INTERN' ? 'MAGANG' : $u->employment_type }})
                                 </option>
                             @endforeach
                         </select>
@@ -110,39 +114,40 @@
 
                     <!-- Status Kehadiran -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Status
-                            Kehadiran</label>
-                        <select name="status"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua Status —</option>
-                            <option value="HADIR_ON_SITE" {{ $status === 'HADIR_ON_SITE' ? 'selected' : '' }}>Hadir On-Site
-                                (Kantor)</option>
-                            <option value="WFH" {{ $status === 'WFH' ? 'selected' : '' }}>WFH (Remote)</option>
+                        <label for="rep_att_status" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Status Kehadiran
+                        </label>
+                        <select id="rep_att_status" name="status"
+                            class="w-full h-[42px] px-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Status</option>
+                            <option value="HADIR_ON_SITE" {{ $status === 'HADIR_ON_SITE' ? 'selected' : '' }}>Hadir di Kantor</option>
+                            <option value="WFA" {{ $status === 'WFA' ? 'selected' : '' }}>WFA (Jarak Jauh)</option>
                             <option value="SAKIT" {{ $status === 'SAKIT' ? 'selected' : '' }}>Sakit</option>
                             <option value="IZIN" {{ $status === 'IZIN' ? 'selected' : '' }}>Izin</option>
-                            <option value="ALPHA" {{ $status === 'ALPHA' ? 'selected' : '' }}>Alpha / Tanpa Keterangan
-                            </option>
+                            <option value="ALPHA" {{ $status === 'ALPHA' ? 'selected' : '' }}>Alpa / Tanpa Keterangan</option>
                         </select>
                     </div>
 
                     <!-- Keterlambatan -->
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Ketepatan
-                            Waktu</label>
-                        <select name="is_late"
-                            class="w-full px-3.5 py-2.5 bg-slate-50/70 border border-slate-300 rounded-xl text-slate-900 text-xs focus:bg-white focus:outline-none focus:border-slate-900 focus:ring-4 focus:ring-slate-900/5 transition">
-                            <option value="">— Semua —</option>
-                            <option value="0" {{ $isLate === '0' ? 'selected' : '' }}>Tepat Waktu (On-Time)</option>
-                            <option value="1" {{ $isLate === '1' ? 'selected' : '' }}>Terlambat (Late)</option>
+                        <label for="rep_att_is_late" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                            Ketepatan Waktu
+                        </label>
+                        <select id="rep_att_is_late" name="is_late"
+                            class="w-full h-[42px] px-3 bg-slate-50 border border-slate-300 rounded-xl text-slate-900 text-xs font-semibold focus:bg-white focus:outline-none focus:ring-2 focus:ring-sky-600 focus:border-sky-600 transition">
+                            <option value="">Semua Ketepatan</option>
+                            <option value="0" {{ $isLate === '0' ? 'selected' : '' }}>Tepat Waktu</option>
+                            <option value="1" {{ $isLate === '1' ? 'selected' : '' }}>Terlambat</option>
                         </select>
                     </div>
-                </div>
 
-                <div class="flex items-center justify-end gap-3 pt-2">
-                    <button type="submit"
-                        class="px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs hover:shadow transition cursor-pointer">
-                        Terapkan Filter
-                    </button>
+                    <!-- Tombol Terapkan -->
+                    <div>
+                        <button type="submit"
+                            class="w-full h-[42px] px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold shadow-xs transition cursor-pointer focus-visible:outline-2 focus-visible:outline-sky-600">
+                            Terapkan Filter
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
@@ -166,7 +171,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span>Export ke Excel</span>
+                        <span>Ekspor ke Excel</span>
                     </a>
                     <span
                         class="text-xs font-mono font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
@@ -239,10 +244,10 @@
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                                                 Hadir Kantor
                                             </span>
-                                        @elseif($att->status === 'WFH')
+                                        @elseif($att->status === 'WFA')
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200">
-                                                WFH (Remote)
+                                                WFA (Jarak Jauh)
                                             </span>
                                         @elseif($att->status === 'SAKIT')
                                             <span
@@ -257,7 +262,7 @@
                                         @else
                                             <span
                                                 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                                Alpha
+                                                Alpa
                                             </span>
                                         @endif
 
@@ -310,11 +315,7 @@
                 </table>
             </div>
 
-            @if ($attendances->hasPages())
-                <div class="px-6 py-4 border-t border-slate-100 bg-slate-50/50">
-                    {{ $attendances->links() }}
-                </div>
-            @endif
+            @include('partials.pagination', ['paginator' => $attendances])
         </div>
 
     </div>
